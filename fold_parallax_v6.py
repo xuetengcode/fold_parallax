@@ -162,8 +162,8 @@ def parallax_matrix(thumbVal, trianglePose):
 
 # In[]
 def main():
-    IMG_PATH = r'.'
-    img_path2 = r'.'
+    IMG_PATH = r'./images'
+    img_path2 = r'./images'
     mono = False
     gain = 1
     play_sound = True
