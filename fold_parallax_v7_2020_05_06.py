@@ -192,7 +192,7 @@ def wait4next(hmd, redlight, metronome, play_sound, timediff, lasttime):
 def run_exp(OUTPUT_FILE, OUTPUT_PATH, bino):
     
     IMG_PATH = r'.\images'
-    img_path2 = r'.\images\test_sky'
+    img_path2 = r'.\images'
     
     
     all_gain = [1/2, 2/3, 4/5, 1, 5/4, 3/2, 2]
