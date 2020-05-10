@@ -152,8 +152,8 @@ def check_dir(folder):
         os.mkdir(folder)
     return
 
-def init_output(OUTPUT_PATH, outfile_base, additional=False):
-    
+def init_output(OUTPUT_PATH, outfile_base, additional=True):
+    check_dir(OUTPUT_PATH)
     if additional:
         year, month, day, hour, minutes = map(int, time.strftime("%Y %m %d %H %M").split())
         time_str = '-'.join([str(year), str(month), str(day), str(hour), str(minutes)])
@@ -189,7 +189,7 @@ def wait4next(hmd, redlight, metronome, play_sound, timediff, lasttime):
  
     return lasttime
 # In[]
-def run_exp(OUTPUT_FILE, OUTPUT_PATH, bino):
+def run_exp(hmd, csv_hdl, bino):
     
     IMG_PATH = r'.\images'
     img_path2 = r'.\images'
@@ -205,20 +205,18 @@ def run_exp(OUTPUT_FILE, OUTPUT_PATH, bino):
     min_rotation = 0.005
     shuffle(all_gain)
     shuffle(all_distance)
-    csv_hdl = init_output(OUTPUT_PATH, OUTPUT_FILE)
+    
     
     #--------------------------
-    check_dir(OUTPUT_PATH)
-    hmd = visual.Rift(samples=16, color=(-1, -1, -1), waitBlanking=False, 
-                      winType='glfw', unit='norm',
-                      useLights=True)
+    
+    
     
     hmd.ambientLight = [0.5, 0.5, 0.5]
     # https://www.psychopy.org/api/visual/lightsource.html#psychopy.visual.LightSource
     dirLight = LightSource(hmd, pos=(0., 1., 0.), ambientColor=(0.0, 1.0, 0.0), lightType='point')
     #hmd.lights = dirLight    
-    redlight = visual.GratingStim(hmd, mask='gauss', size=1.0, tex=None, color='red', contrast=0.5, units='norm')
-    redlight.setOpacity(0.2) # 0.5
+    redlight = visual.GratingStim(hmd, mask='gauss', size=2.0, tex=None, color='red', contrast=0.8, units='norm')
+    redlight.setOpacity(1) # 0.5
     blacklight = visual.GratingStim(hmd, mask='gauss', size=3.0, tex=None, color=(0,0,0), contrast=0.8, units='norm')
     blacklight.setOpacity(0.8)
     
@@ -301,7 +299,7 @@ def run_exp(OUTPUT_FILE, OUTPUT_PATH, bino):
                         continue
                     
                     hmd.setBuffer(i)
-                    hmd, blacklight = black(hmd, headPose, i, blacklight)
+                    #hmd, blacklight = black(hmd, headPose, i, blacklight)
                     hmd.setRiftView()
                     #--------------- origin
                     hmd = render_plane(stim_origin, hmd, WhiteTexture, trianglePose)
@@ -365,18 +363,25 @@ def run_exp(OUTPUT_FILE, OUTPUT_PATH, bino):
                     stopCurr = True
                 elif event.getKeys('r') or hmd.shouldRecenter:
                     hmd.recenterTrackingOrigin()
-    hmd.close()
-    core.quit()
-    csv_hdl.close()
+    
+    return
     
 if __name__ == "__main__":
     
     OUTPUT_FILE = r'output'
     OUTPUT_PATH = r'.\output'
     bino = True
+    n_repeat = 2
     
-    n_repeat = 3
+    hmd = visual.Rift(samples=16, color=(-1, -1, -1), waitBlanking=False, 
+                      winType='glfw', unit='norm',
+                      useLights=True)
+    csv_hdl = init_output(OUTPUT_PATH, OUTPUT_FILE)
+    
     for i_repeat in range(n_repeat):
-        run_exp(OUTPUT_FILE, OUTPUT_PATH, bino)
+        run_exp(hmd, csv_hdl, bino)
     
+    csv_hdl.close()
+    hmd.close()
+    core.quit()
     
