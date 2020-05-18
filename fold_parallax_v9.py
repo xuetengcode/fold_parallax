@@ -252,7 +252,7 @@ def run_exp(hmd, csv_hdl, bino, play_sound=True, stopApp = False):
     # https://www.psychopy.org/api/visual/lightsource.html#psychopy.visual.LightSource
     #dirLight = LightSource(hmd, pos=(0., 1., 0.), ambientColor=(0.0, 1.0, 0.0), lightType='point')
     #hmd.lights = dirLight    
-    redlight = visual.GratingStim(hmd, mask='gauss', size=2.0, tex=None, color='red', contrast=0.8, units='norm')
+    redlight = visual.GratingStim(hmd, mask='gauss', size=1.0, tex=None, color='red', contrast=0.4, units='norm')
     redlight.setOpacity(1) # 0.5
     blacklight = visual.GratingStim(hmd, mask='gauss', size=3.0, tex=None, color=(0,0,0), contrast=0.8, units='norm')
     blacklight.setOpacity(0.8)
