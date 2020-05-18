@@ -3,6 +3,7 @@
 https://www.psychopy.org/general/units.html
 
 """
+from psychopy import gui
 from psychopy import visual, event, core
 from psychopy.tools import arraytools, rifttools
 from psychopy.tools import gltools, mathtools
@@ -20,18 +21,36 @@ import time
 import sys
 
 # In[]
-def red(hmd, head_pos, eye, redlight):
+def red_wait(hmd, head_pos, eye, redlight, hit_left, hit_right, shake_cnt_l=0, shake_cnt_r=0):
     light_shift = 0.9
-    parallax_thr = 0.05
-    if head_pos.pos[0] > parallax_thr and eye == 'right':
+    shake_thr = 0.05
+    if head_pos.pos[0] > shake_thr and eye == 'right':
         redlight.pos = (light_shift, 0.)
         redlight.draw(hmd)
-    elif head_pos.pos[0] < -parallax_thr and eye == 'left':
+        if hit_left:
+            shake_cnt_r += 1
+            hit_right = True
+            hit_left = False
+    elif head_pos.pos[0] < -shake_thr and eye == 'left':
         redlight.pos = (-light_shift, 0.)
         redlight.draw(hmd)
-        #print('==> left eye')
-    return hmd, redlight
+        if hit_right:
+            shake_cnt_l += 1
+            hit_left = True
+            hit_right = False
+    return hmd, hit_left, hit_right, shake_cnt_l, shake_cnt_r
 
+def red(hmd, head_pos, eye, redlight):
+    light_shift = 0.9
+    shake_thr = 0.05
+    if head_pos.pos[0] > shake_thr and eye == 'right':
+        redlight.pos = (light_shift, 0.)
+        redlight.draw(hmd)
+    elif head_pos.pos[0] < -shake_thr and eye == 'left':
+        redlight.pos = (-light_shift, 0.)
+        redlight.draw(hmd)
+            
+    return hmd
 
 def mtx2vao(xx, yy, zz):    
     vertices, textureCoords, normals, faces = \
@@ -52,17 +71,17 @@ def mtx2vao(xx, yy, zz):
 
 def render_plane(stim, hmd, textureDesc, trianglePose):
     sc = mathtools.scaleMatrix((1., 1., 1.0))
-    parallax = mathtools.concatenate(
+    rotation_mtx = mathtools.concatenate(
         [sc, trianglePose.getModelMatrix()], dtype=np.float32)
 
-    parallax = arraytools.array2pointer(parallax)    
-    hmd = render2hmd(stim, hmd, textureDesc, parallax)    
+    rotation_mtx = arraytools.array2pointer(rotation_mtx)    
+    hmd = render2hmd(stim, hmd, textureDesc, rotation_mtx)    
     return hmd
 
-def render2hmd(stim, hmd, textureDesc, parallax):    
+def render2hmd(stim, hmd, textureDesc, rotation_mtx):    
     hmd.draw3d = True
     GL.glPushMatrix()
-    GL.glMultTransposeMatrixf(parallax)
+    GL.glMultTransposeMatrixf(rotation_mtx)
     GL.glEnable(GL.GL_TEXTURE_2D)
     GL.glActiveTexture(GL.GL_TEXTURE0)
     GL.glBindTexture(GL.GL_TEXTURE_2D, textureDesc.name)
@@ -94,6 +113,7 @@ def create_floor():
 
 def create_origin(yy0=-2.8): 
     x = np.linspace(-0.3, 0.3, 3)
+    #z = np.linspace(1.55, 1.7, 3)
     z = np.linspace(1.55, 1.7, 3)
     xx, zz = np.meshgrid(x, z)
     
@@ -123,9 +143,10 @@ def positive_or_negative():
     else:
         return -1    
 
-def black(hmd, head_pos, eye, blacklight, fr=-0.12, bk=0.05):
+def black(hmd, head_pos, eye, blacklight, fr=3., bk=3.1): # fr=-0.12, bk=0.05
     #print(head_pos.pos)
-    #print(head_pos.pos[2] > bk or head_pos.pos[2] < fr)
+    #print(head_pos.pos[2] > bk)
+    #print(head_pos.pos[2] < fr)
     if head_pos.pos[2] > bk or head_pos.pos[2] < fr:
         if eye == 'right':
             blacklight.pos = (head_pos.pos[0], head_pos.pos[1])
@@ -139,20 +160,20 @@ def black(hmd, head_pos, eye, blacklight, fr=-0.12, bk=0.05):
 
 
 # In[]
-def parallax_matrix(thumbVal, trianglePose):
+def gen_rotation_mtx(thumbVal, trianglePose):
     rotation = mathtools.rotationMatrix(thumbVal * 180 / math.pi, [0., 1., 0.]) # <<<<< rotation
-    parallax = mathtools.concatenate(
+    rotation_mtx = mathtools.concatenate(
                     [rotation, trianglePose.getModelMatrix()], dtype=np.float32)
-    parallax = arraytools.array2pointer(parallax)
+    rotation_mtx = arraytools.array2pointer(rotation_mtx)
     
-    return parallax
+    return rotation_mtx
 
 def check_dir(folder):
     if not os.path.isdir('output'):
         os.mkdir(folder)
     return
 
-def init_output(OUTPUT_PATH, outfile_base, additional=True):
+def init_output(OUTPUT_PATH, outfile_base, play_sound=True, additional=True):
     check_dir(OUTPUT_PATH)
     if additional:
         year, month, day, hour, minutes = map(int, time.strftime("%Y %m %d %H %M").split())
@@ -160,6 +181,8 @@ def init_output(OUTPUT_PATH, outfile_base, additional=True):
     else:
         time_str = ''
     
+    time_str += '_' + ok_data[2] + '_' + ok_data[3]
+        
     output_file = '_'.join([outfile_base, time_str, os.path.basename(sys.argv[0])]) + r'.csv'
     csv_hdl = open(os.path.join(OUTPUT_PATH, output_file),'w')
     
@@ -167,6 +190,12 @@ def init_output(OUTPUT_PATH, outfile_base, additional=True):
 
 def wait4next(hmd, redlight, metronome, play_sound, timediff, lasttime):
     
+    shake_cnt_l = 0
+    shake_cnt_r = 0
+    
+    hit_left = True
+    hit_right = False
+    pass_cnt = 2
     while 1:
          currenttime = hmd.getPredictedDisplayTime()
          if play_sound:
@@ -178,18 +207,26 @@ def wait4next(hmd, redlight, metronome, play_sound, timediff, lasttime):
          state = hmd.getTrackingState(currenttime)
          headPose = state.headPose.thePose    
          hmd.calcEyePoses(headPose)
-             
+         
+         
          for eye in ('left', 'right'):
              hmd.setBuffer(eye)
              hmd.setDefaultView(clearDepth=True)
-             hmd, redlight = red(hmd, headPose, eye, redlight)    
-         hmd.flip()         
-         if event.getKeys('q') or hmd.shouldQuit or hmd.getButtons('A', 'Touch', 'falling')[0]:
+             hmd, hit_left, hit_right, shake_cnt_l, shake_cnt_r = red_wait(hmd, headPose, eye, redlight, hit_left, hit_right, shake_cnt_l, shake_cnt_r)    
+         hmd.flip()
+         
+         if shake_cnt_l >= pass_cnt and shake_cnt_r >= pass_cnt:
+             break
+         
+         if event.getKeys('q') or hmd.shouldQuit:
+             break
+         
+         if not play_sound and hmd.getButtons('A', 'Touch', 'falling')[0]:
              break
  
     return lasttime
 # In[]
-def run_exp(hmd, csv_hdl, bino):
+def run_exp(hmd, csv_hdl, bino, play_sound=True, stopApp = False):
     
     IMG_PATH = r'.\images'
     img_path2 = r'.\images'
@@ -197,10 +234,10 @@ def run_exp(hmd, csv_hdl, bino):
     
     all_gain = [1/2, 2/3, 4/5, 1, 5/4, 3/2, 2]
     all_distance = [1.3, 1.4, 1.5]
-    play_sound = True
-    depth_restriction = False
+    #play_sound = True
+    #depth_restriction = False
     timediff = 1
-    MAX_EXP = 30
+    #MAX_EXP = 30
     #-------- constant
     min_rotation = 0.005
     shuffle(all_gain)
@@ -213,7 +250,7 @@ def run_exp(hmd, csv_hdl, bino):
     
     hmd.ambientLight = [0.5, 0.5, 0.5]
     # https://www.psychopy.org/api/visual/lightsource.html#psychopy.visual.LightSource
-    dirLight = LightSource(hmd, pos=(0., 1., 0.), ambientColor=(0.0, 1.0, 0.0), lightType='point')
+    #dirLight = LightSource(hmd, pos=(0., 1., 0.), ambientColor=(0.0, 1.0, 0.0), lightType='point')
     #hmd.lights = dirLight    
     redlight = visual.GratingStim(hmd, mask='gauss', size=2.0, tex=None, color='red', contrast=0.8, units='norm')
     redlight.setOpacity(1) # 0.5
@@ -247,7 +284,7 @@ def run_exp(hmd, csv_hdl, bino):
     metronome = Sound(r'.\audio\output.wav')
     beep = Sound('C')
     nextRound = False
-    stopApp = False
+    
     exp_id = 0    
     print('==> Starting Experiment')        
     #while not nextRound and not stopApp and exp_id <= MAX_EXP:
@@ -296,30 +333,38 @@ def run_exp(hmd, csv_hdl, bino):
                     
                 for i in ('left', 'right'):
                     if i == 'left' and not bino:
-                        continue
-                    
-                    hmd.setBuffer(i)
-                    #hmd, blacklight = black(hmd, headPose, i, blacklight)
-                    hmd.setRiftView()
-                    #--------------- origin
-                    hmd = render_plane(stim_origin, hmd, WhiteTexture, trianglePose)
-                    #--------------- aperture
-                    hmd = render_plane(stim_aperture_low, hmd, BlackoutTexture, trianglePose)
-                    hmd = render_plane(stim_aperture_high, hmd, BlackoutTexture, trianglePose)
-                    #--------------- floor
-                    hmd = render_plane(stim_floor, hmd, FloorTexture, trianglePose)
-                    #-------------- the left half prism
-                    parallax = parallax_matrix(thumbVal, trianglePose)
-                    hmd = render2hmd(stim_left, hmd, textureDesc, parallax)
-                    #-------------- the right half prism
-                    parallax = parallax_matrix(-thumbVal, trianglePose)
-                    hmd = render2hmd(stim_right, hmd, textureDesc, parallax)
-                    sky.draw()
-                    #----------------------------------
-                    hmd.setDefaultView()
-                    hmd, redlight = red(hmd, headPose, i, redlight)
-                    
-                    GL.glColor3f(1.0, 1.0, 1.0)  # <<< reset the color manually
+                        hmd.setBuffer(i)
+                        hmd.setRiftView()
+                        
+                        #----------------------------------
+                        hmd.setDefaultView()
+                        hmd = red(hmd, headPose, i, redlight)
+                        
+                        GL.glColor3f(1.0, 1.0, 1.0)  # <<< reset the color manually
+                    else:
+                            
+                        hmd.setBuffer(i)
+                        hmd, blacklight = black(hmd, headPose, i, blacklight)
+                        hmd.setRiftView()
+                        #--------------- origin
+                        hmd = render_plane(stim_origin, hmd, WhiteTexture, trianglePose)
+                        #--------------- aperture
+                        hmd = render_plane(stim_aperture_low, hmd, BlackoutTexture, trianglePose)
+                        hmd = render_plane(stim_aperture_high, hmd, BlackoutTexture, trianglePose)
+                        #--------------- floor
+                        hmd = render_plane(stim_floor, hmd, FloorTexture, trianglePose)
+                        #-------------- the left half prism
+                        rotation_mtx = gen_rotation_mtx(thumbVal, trianglePose)
+                        hmd = render2hmd(stim_left, hmd, textureDesc, rotation_mtx)
+                        #-------------- the right half prism
+                        rotation_mtx = gen_rotation_mtx(-thumbVal, trianglePose)
+                        hmd = render2hmd(stim_right, hmd, textureDesc, rotation_mtx)
+                        sky.draw()
+                        #----------------------------------
+                        hmd.setDefaultView()
+                        hmd = red(hmd, headPose, i, redlight)
+                        
+                        GL.glColor3f(1.0, 1.0, 1.0)  # <<< reset the color manually
                 hmd.flip()
                 rawVal = hmd.getThumbstickValues(r'Touch', deadzone=True)[1]
                 if rawVal[0] > 0.25:
@@ -364,24 +409,65 @@ def run_exp(hmd, csv_hdl, bino):
                 elif event.getKeys('r') or hmd.shouldRecenter:
                     hmd.recenterTrackingOrigin()
     
-    return
+    return stopApp
     
 if __name__ == "__main__":
     
-    OUTPUT_FILE = r'output'
-    OUTPUT_PATH = r'.\output'
-    bino = True
-    n_repeat = 2
+    #OUTPUT_FILE = r'output'
+    #OUTPUT_PATH = r'.\output'
+    #bino = False
+    #n_repeat = 3
+        
+    myDlg = gui.Dlg(title="Fold Parallax")
+    myDlg.addText('Subject info')
+    # 0
+    myDlg.addField('Name:', 'default')
+    # 1
+    myDlg.addField('Total Session:', 3)
+    # 2
+    myDlg.addText('Conditions')
+    myDlg.addField('Viewing Condition:', choices=["bino", "mono"])
+    # 3
+    myDlg.addField('Motion Condition:', choices=["motion", "static"])
+    # 4
+    myDlg.addText('Data')
+    myDlg.addField('Output directory:', './output')
+    ok_data = myDlg.show()  # show dialog and wait for OK or Cancel
     
-    hmd = visual.Rift(samples=16, color=(-1, -1, -1), waitBlanking=False, 
-                      winType='glfw', unit='norm',
-                      useLights=True)
-    csv_hdl = init_output(OUTPUT_PATH, OUTPUT_FILE)
+    if myDlg.OK:  # or if ok_data is not None
+        stopApp = False
+        hmd = visual.Rift(samples=16, color=(-1, -1, -1), waitBlanking=False, 
+                          winType='glfw', #unit='norm',
+                          useLights=True)
+        OUTPUT_FILE = r'{}'.format(ok_data[0])
+        OUTPUT_PATH = r'{}'.format(ok_data[4])
+        
+        if ok_data[2] in ["bino"]:
+            bino = True
+        else:
+            bino = False
+        
+        if ok_data[3] in ["motion"]:
+            play_sound = True
+        else:
+            play_sound = False
+        
+        csv_hdl = init_output(OUTPUT_PATH, OUTPUT_FILE, ok_data)
+        
+        for i_repeat in range(ok_data[1]):
+            if stopApp:
+                break
+            stopApp = run_exp(hmd, csv_hdl, bino, play_sound, stopApp)
+        
+        csv_hdl.close()
+        hmd.close()
+        core.quit()
+        
+    else:
+        
+        print('user cancelled')
+        
     
-    for i_repeat in range(n_repeat):
-        run_exp(hmd, csv_hdl, bino)
     
-    csv_hdl.close()
-    hmd.close()
-    core.quit()
+        
     
