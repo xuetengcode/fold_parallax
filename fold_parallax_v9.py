@@ -222,7 +222,8 @@ def wait4next(hmd, redlight, metronome, play_sound, timediff, lasttime):
          if event.getKeys('q') or hmd.shouldQuit:
              break
          
-         if not play_sound and hmd.getButtons('A', 'Touch', 'falling')[0]:
+         #if not play_sound and hmd.getButtons('A', 'Touch', 'falling')[0]:
+         if hmd.getButtons('A', 'Touch', 'falling')[0]:
              break
  
     return lasttime
@@ -235,6 +236,12 @@ def run_exp(hmd, csv_hdl, bino, play_sound=True, stopApp = False):
     
     all_gain = [1/2, 2/3, 4/5, 1, 5/4, 3/2, 2]
     all_distance = [1.3, 1.4, 1.5]
+    exp_conditions = []
+    
+    for i_g in range(len(all_gain)):
+        for i_d in range (len(all_distance)):
+            exp_conditions.append([all_distance[i_d],all_gain[i_g]])
+    shuffle(exp_conditions)
     #play_sound = True
     #depth_restriction = False
     timediff = 1
@@ -253,7 +260,7 @@ def run_exp(hmd, csv_hdl, bino, play_sound=True, stopApp = False):
     # https://www.psychopy.org/api/visual/lightsource.html#psychopy.visual.LightSource
     #dirLight = LightSource(hmd, pos=(0., 1., 0.), ambientColor=(0.0, 1.0, 0.0), lightType='point')
     #hmd.lights = dirLight    
-    redlight = visual.GratingStim(hmd, mask='gauss', size=1.0, tex=None, color='red', contrast=0.4, units='norm')
+    redlight = visual.GratingStim(hmd, mask='gauss', size=1.0, tex=None, color='red', contrast=0.5, units='norm')
     redlight.setOpacity(1) # 0.5
     blacklight = visual.GratingStim(hmd, mask='gauss', size=3.0, tex=None, color=(0,0,0), contrast=0.8, units='norm')
     blacklight.setOpacity(0.8)
@@ -292,123 +299,124 @@ def run_exp(hmd, csv_hdl, bino, play_sound=True, stopApp = False):
         
         
     lasttime = hmd.getPredictedDisplayTime()
-    for rand_pos in all_distance:
+    for i_exp in range(len(exp_conditions)):
+    #for rand_pos in all_distance:
         # generate random position
         #rand_pos = -1*(random()*0.7+1.3)
         
-        trianglePosition = (0., hmd.eyeHeight, rand_pos)
+        trianglePosition = (0., hmd.eyeHeight, exp_conditions[i_exp][0])
         trianglePose = rifttools.LibOVRPose(trianglePosition)    
         
-        for gain in all_gain:
-            if stopApp:
-                break
+        
+        if stopApp:
+            break
+        
+        exp_id += 1
+        rand_ang = math.pi * (15 + random()*25)/180 * positive_or_negative()
+        print('==> New trial started')
+        # thumbstick value
+        thumbVal = rand_ang
+        stopCurr = False
+        adjustment_cnt = 0
+        
+        
+        lasttime = wait4next(hmd, redlight, metronome, play_sound, timediff, lasttime)
+        
+        
+        
+        while not stopCurr:
             
-            exp_id += 1
-            rand_ang = math.pi * (15 + random()*25)/180 * positive_or_negative()
-            print('==> New trial started')
-            # thumbstick value
-            thumbVal = rand_ang
-            stopCurr = False
-            adjustment_cnt = 0
-            
-            
-            lasttime = wait4next(hmd, redlight, metronome, play_sound, timediff, lasttime)
-            
-            
-            
-            while not stopCurr:
+            currenttime = hmd.getPredictedDisplayTime()
+            state = hmd.getTrackingState(currenttime)
+            headPose = state.headPose.thePose
+            scene_head_pose = libovr.LibOVRPose(*headPose.posOri)
+            scene_head_pose.pos[0] *= exp_conditions[i_exp][1]
+            hmd.calcEyePoses(scene_head_pose)            
+            if play_sound:
+                #print('Time diff {0:.3f}'.format(currenttime-lasttime))
+                if abs(currenttime - lasttime - timediff) < 0.01 and currenttime-lasttime > 0.1:
+                    metronome.stop(reset=True)
+                    metronome.play()
+                    #print('Time diff {0:.5f}'.format(currenttime-lasttime))
+                    lasttime = currenttime
                 
-                currenttime = hmd.getPredictedDisplayTime()
-                state = hmd.getTrackingState(currenttime)
-                headPose = state.headPose.thePose
-                scene_head_pose = libovr.LibOVRPose(*headPose.posOri)
-                scene_head_pose.pos[0] *= gain
-                hmd.calcEyePoses(scene_head_pose)            
-                if play_sound:
-                    #print('Time diff {0:.3f}'.format(currenttime-lasttime))
-                    if abs(currenttime - lasttime - timediff) < 0.01 and currenttime-lasttime > 0.1:
-                        metronome.stop(reset=True)
-                        metronome.play()
-                        #print('Time diff {0:.5f}'.format(currenttime-lasttime))
-                        lasttime = currenttime
+            for i in ('left', 'right'):
+                if i == 'left' and not bino:
+                    hmd.setBuffer(i)
+                    hmd.setRiftView()
                     
-                for i in ('left', 'right'):
-                    if i == 'left' and not bino:
-                        hmd.setBuffer(i)
-                        hmd.setRiftView()
+                    #----------------------------------
+                    hmd.setDefaultView()
+                    hmd = red(hmd, headPose, i, redlight)
+                    
+                    GL.glColor3f(1.0, 1.0, 1.0)  # <<< reset the color manually
+                else:
                         
-                        #----------------------------------
-                        hmd.setDefaultView()
-                        hmd = red(hmd, headPose, i, redlight)
-                        
-                        GL.glColor3f(1.0, 1.0, 1.0)  # <<< reset the color manually
-                    else:
-                            
-                        hmd.setBuffer(i)
-                        hmd, blacklight = black(hmd, headPose, i, blacklight)
-                        hmd.setRiftView()
-                        #--------------- origin
-                        hmd = render_plane(stim_origin, hmd, WhiteTexture, trianglePose)
-                        #--------------- aperture
-                        hmd = render_plane(stim_aperture_low, hmd, BlackoutTexture, trianglePose)
-                        hmd = render_plane(stim_aperture_high, hmd, BlackoutTexture, trianglePose)
-                        #--------------- floor
-                        hmd = render_plane(stim_floor, hmd, FloorTexture, trianglePose)
-                        #-------------- the left half prism
-                        rotation_mtx = gen_rotation_mtx(thumbVal, trianglePose)
-                        hmd = render2hmd(stim_left, hmd, textureDesc, rotation_mtx)
-                        #-------------- the right half prism
-                        rotation_mtx = gen_rotation_mtx(-thumbVal, trianglePose)
-                        hmd = render2hmd(stim_right, hmd, textureDesc, rotation_mtx)
-                        sky.draw()
-                        #----------------------------------
-                        hmd.setDefaultView()
-                        hmd = red(hmd, headPose, i, redlight)
-                        
-                        GL.glColor3f(1.0, 1.0, 1.0)  # <<< reset the color manually
-                hmd.flip()
-                rawVal = hmd.getThumbstickValues(r'Touch', deadzone=True)[1]
-                if rawVal[0] > 0.25:
-                    thumbVal += min_rotation
-                    adjustment_cnt += 1
+                    hmd.setBuffer(i)
+                    hmd, blacklight = black(hmd, headPose, i, blacklight)
+                    hmd.setRiftView()
+                    #--------------- origin
+                    hmd = render_plane(stim_origin, hmd, WhiteTexture, trianglePose)
+                    #--------------- aperture
+                    hmd = render_plane(stim_aperture_low, hmd, BlackoutTexture, trianglePose)
+                    hmd = render_plane(stim_aperture_high, hmd, BlackoutTexture, trianglePose)
+                    #--------------- floor
+                    hmd = render_plane(stim_floor, hmd, FloorTexture, trianglePose)
+                    #-------------- the left half prism
+                    rotation_mtx = gen_rotation_mtx(thumbVal, trianglePose)
+                    hmd = render2hmd(stim_left, hmd, textureDesc, rotation_mtx)
+                    #-------------- the right half prism
+                    rotation_mtx = gen_rotation_mtx(-thumbVal, trianglePose)
+                    hmd = render2hmd(stim_right, hmd, textureDesc, rotation_mtx)
+                    sky.draw()
+                    #----------------------------------
+                    hmd.setDefaultView()
+                    hmd = red(hmd, headPose, i, redlight)
                     
-                elif rawVal[0] < -0.25:
-                    thumbVal -= min_rotation
-                    adjustment_cnt -= 1
-                    
-                if event.getKeys('q') or hmd.shouldQuit or hmd.getButtons('A', 'Touch', 'released')[0]:
-                    print(' (Key stop by q)')
-                    print('[log] Trial {}; Position: {}, rand_ang: {} (RAD), minimu rotation: {}, adjustment: {}, gain: {}'.format(
-                            exp_id, rand_pos, rand_ang, min_rotation,
-                            adjustment_cnt, gain
-                            ))
-                    
-                    csv_hdl.write('{}, {}, {}, {}, {}, {}, {}\n'.format(
-                        exp_id, rand_pos, rand_ang, min_rotation,
-                        adjustment_cnt, gain, bino
+                    GL.glColor3f(1.0, 1.0, 1.0)  # <<< reset the color manually
+            hmd.flip()
+            rawVal = hmd.getThumbstickValues(r'Touch', deadzone=True)[1]
+            if rawVal[0] > 0.25:
+                thumbVal += min_rotation
+                adjustment_cnt += 1
+                
+            elif rawVal[0] < -0.25:
+                thumbVal -= min_rotation
+                adjustment_cnt -= 1
+                
+            if event.getKeys('q') or hmd.shouldQuit or hmd.getButtons('A', 'Touch', 'released')[0]:
+                print(' (Key stop by q)')
+                print('[log] Trial {}; Position: {}, rand_ang: {} (RAD), minimu rotation: {}, adjustment: {}, gain: {}'.format(
+                        exp_id, exp_conditions[i_exp][0], rand_ang, min_rotation,
+                        adjustment_cnt, exp_conditions[i_exp][1]
                         ))
-                    
-                    
-                    stopCurr = True                                
-                    
-                    beep.stop(reset=True)
-                    beep.play()
-                elif event.getKeys('x') or hmd.shouldQuit or hmd.getButtons('B', 'Touch', 'released')[0]:
-                    print(' program stop by x')
-                    print('[log] Trial {}; Position: {}, rand_ang: {} (RAD), minimu rotation: {}, adjustment: {}, gain: {}'.format(
-                            exp_id, rand_pos, rand_ang, min_rotation,
-                            adjustment_cnt, gain
-                            ))
-                    
-                    csv_hdl.write('{}, {}, {}, {}, {}, {}, {}\n'.format(
-                        exp_id, rand_pos, rand_ang, min_rotation,
-                        adjustment_cnt, gain, bino
+                
+                csv_hdl.write('{}, {}, {}, {}, {}, {}\n'.format(
+                    exp_id, exp_conditions[i_exp][0], rand_ang, min_rotation,
+                    adjustment_cnt, exp_conditions[i_exp][1]
+                    ))
+                
+                
+                stopCurr = True                                
+                
+                beep.stop(reset=True)
+                beep.play()
+            elif event.getKeys('x') or hmd.shouldQuit or hmd.getButtons('B', 'Touch', 'released')[0]:
+                print(' program stop by x')
+                print('[log] Trial {}; Position: {}, rand_ang: {} (RAD), minimu rotation: {}, adjustment: {}, gain: {}'.format(
+                        exp_id, exp_conditions[i_exp][0], rand_ang, min_rotation,
+                        adjustment_cnt, exp_conditions[i_exp][1]
                         ))
-                    
-                    stopApp = True
-                    stopCurr = True
-                elif event.getKeys('r') or hmd.shouldRecenter:
-                    hmd.recenterTrackingOrigin()
+                
+                csv_hdl.write('{}, {}, {}, {}, {}, {}\n'.format(
+                    exp_id, exp_conditions[i_exp][0], rand_ang, min_rotation,
+                    adjustment_cnt, exp_conditions[i_exp][1]
+                    ))
+                
+                stopApp = True
+                stopCurr = True
+            elif event.getKeys('r') or hmd.shouldRecenter:
+                hmd.recenterTrackingOrigin()
     
     return stopApp
     
