@@ -195,7 +195,8 @@ def wait4next(hmd, redlight, metronome, play_sound, timediff, lasttime):
     
     hit_left = True
     hit_right = False
-    pass_cnt = 2
+    activate_cnt = 1
+    
     while 1:
          currenttime = hmd.getPredictedDisplayTime()
          if play_sound:
@@ -215,7 +216,7 @@ def wait4next(hmd, redlight, metronome, play_sound, timediff, lasttime):
              hmd, hit_left, hit_right, shake_cnt_l, shake_cnt_r = red_wait(hmd, headPose, eye, redlight, hit_left, hit_right, shake_cnt_l, shake_cnt_r)    
          hmd.flip()
          
-         if shake_cnt_l >= pass_cnt and shake_cnt_r >= pass_cnt:
+         if shake_cnt_l >= activate_cnt and shake_cnt_r >= activate_cnt:
              break
          
          if event.getKeys('q') or hmd.shouldQuit:
