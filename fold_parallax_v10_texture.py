@@ -69,22 +69,22 @@ def mtx2vao(xx, yy, zz):
         indexBuffer=indexBuffer, legacy=True)    
     return vao
 
-def render_plane(stim, hmd, textureDesc, trianglePose):
+def render_plane(stim, hmd, voro, trianglePose):
     sc = mathtools.scaleMatrix((1., 1., 1.0))
     rotation_mtx = mathtools.concatenate(
         [sc, trianglePose.getModelMatrix()], dtype=np.float32)
 
     rotation_mtx = arraytools.array2pointer(rotation_mtx)    
-    hmd = render2hmd(stim, hmd, textureDesc, rotation_mtx)    
+    hmd = render2hmd(stim, hmd, voro, rotation_mtx)    
     return hmd
 
-def render2hmd(stim, hmd, textureDesc, rotation_mtx):    
+def render2hmd(stim, hmd, voro, rotation_mtx):    
     hmd.draw3d = True
     GL.glPushMatrix()
     GL.glMultTransposeMatrixf(rotation_mtx)
     GL.glEnable(GL.GL_TEXTURE_2D)
     GL.glActiveTexture(GL.GL_TEXTURE0)
-    GL.glBindTexture(GL.GL_TEXTURE_2D, textureDesc.name)
+    GL.glBindTexture(GL.GL_TEXTURE_2D, voro.name)
 
     gltools.drawVAO(stim, GL.GL_TRIANGLES)
     GL.glBindTexture(GL.GL_TEXTURE_2D, 0)
@@ -272,8 +272,13 @@ def run_exp(hmd, csv_hdl, bino, play_sound=True, stopApp = False):
     stim_aperture_high = create_aperture(11.3, 0.3)
     stim_origin = create_origin()    
 
-    textureDesc = gltools.createTexImage2dFromFile(
+    voro50 = gltools.createTexImage2dFromFile(
         r'{}'.format(os.path.join(IMG_PATH, 'voronoi_50.png')))
+    voro55 = gltools.createTexImage2dFromFile(
+        r'{}'.format(os.path.join(IMG_PATH, 'voronoi_55.png')))
+    voro60 = gltools.createTexImage2dFromFile(
+        r'{}'.format(os.path.join(IMG_PATH, 'voronoi_60.png')))
+    voros = [voro60,voro55,voro50]
     FloorTexture = gltools.createTexImage2dFromFile(
         r'{}'.format(os.path.join(IMG_PATH, 'diffus.png')))
     WhiteTexture = gltools.createTexImage2dFromFile(
@@ -303,7 +308,7 @@ def run_exp(hmd, csv_hdl, bino, play_sound=True, stopApp = False):
     #for rand_pos in all_distance:
         # generate random position
         #rand_pos = -1*(random()*0.7+1.3)
-        
+        voro = voros[all_distance.index(exp_conditions[i_exp][0])]
         trianglePosition = (0., hmd.eyeHeight, exp_conditions[i_exp][0])
         trianglePose = rifttools.LibOVRPose(trianglePosition)    
         
@@ -364,10 +369,10 @@ def run_exp(hmd, csv_hdl, bino, play_sound=True, stopApp = False):
                     hmd = render_plane(stim_floor, hmd, FloorTexture, trianglePose)
                     #-------------- the left half prism
                     rotation_mtx = gen_rotation_mtx(thumbVal, trianglePose)
-                    hmd = render2hmd(stim_left, hmd, textureDesc, rotation_mtx)
+                    hmd = render2hmd(stim_left, hmd, voro, rotation_mtx)
                     #-------------- the right half prism
                     rotation_mtx = gen_rotation_mtx(-thumbVal, trianglePose)
-                    hmd = render2hmd(stim_right, hmd, textureDesc, rotation_mtx)
+                    hmd = render2hmd(stim_right, hmd, voro, rotation_mtx)
                     sky.draw()
                     #----------------------------------
                     hmd.setDefaultView()
