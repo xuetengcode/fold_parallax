@@ -173,11 +173,17 @@ def check_dir(folder):
         os.mkdir(folder)
     return
 
+def expand_data(invar):
+    
+    if len(invar)==1:
+        invar = '0'+invar
+    return invar
+
 def init_output(OUTPUT_PATH, outfile_base, play_sound=True, additional=True):
     check_dir(OUTPUT_PATH)
     if additional:
         year, month, day, hour, minutes = map(int, time.strftime("%Y %m %d %H %M").split())
-        time_str = '-'.join([str(year), str(month), str(day), str(hour), str(minutes)])
+        time_str = '-'.join([str(year), expand_data(str(month)), expand_data(str(day)), expand_data(str(hour)), expand_data(str(minutes))])
     else:
         time_str = ''
     
