@@ -225,16 +225,17 @@ def blackscene(hmd, redlight, metronome, play_sound, timediff, lasttime):
          if red_cnt_l >= activate_cnt and red_cnt_r >= activate_cnt and play_sound:
              break
          
-         if event.getKeys('q') or hmd.shouldQuit:
+         if event.getKeys('n') or hmd.shouldQuit:
              break
          
          if not play_sound and hmd.getButtons('A', 'Touch', 'falling')[0]:
          #if hmd.getButtons('A', 'Touch', 'falling')[0]:
              break
- 
+         if event.getKeys('r'): # get rid of multiple triggering
+             continue
     return lasttime
 # In[]
-def run_exp(hmd, csv_hdl, bino, play_sound=True, stopApp = False):
+def run_exp(hmd, bino, results, play_sound=True, stopApp = False):
     
     IMG_PATH = r'.\images'
     img_path2 = r'.\images'
@@ -280,11 +281,11 @@ def run_exp(hmd, csv_hdl, bino, play_sound=True, stopApp = False):
 
     voro50 = gltools.createTexImage2dFromFile(
         r'{}'.format(os.path.join(IMG_PATH, 'voronoi_50.png')))
-    voro55 = gltools.createTexImage2dFromFile(
-        r'{}'.format(os.path.join(IMG_PATH, 'voronoi_55.png')))
-    voro60 = gltools.createTexImage2dFromFile(
-        r'{}'.format(os.path.join(IMG_PATH, 'voronoi_60.png')))
-    voros = [voro60,voro55,voro50]
+    voro53 = gltools.createTexImage2dFromFile(
+        r'{}'.format(os.path.join(IMG_PATH, 'voronoi_53.png')))
+    voro56 = gltools.createTexImage2dFromFile(
+        r'{}'.format(os.path.join(IMG_PATH, 'voronoi_56.png')))
+    
     FloorTexture = gltools.createTexImage2dFromFile(
         r'{}'.format(os.path.join(IMG_PATH, 'diffus.png')))
     WhiteTexture = gltools.createTexImage2dFromFile(
@@ -304,17 +305,21 @@ def run_exp(hmd, csv_hdl, bino, play_sound=True, stopApp = False):
     beep = Sound('C')
     nextRound = False
     
-    exp_id = 0    
+    #exp_id = 0    
     print('==> Starting Experiment')        
     #while not nextRound and not stopApp and exp_id <= MAX_EXP:
+    
         
+
         
     lasttime = hmd.getPredictedDisplayTime()
-    for i_exp in range(len(exp_conditions)):
-    #for rand_pos in all_distance:
-        # generate random position
-        #rand_pos = -1*(random()*0.7+1.3)
-        voro = voros[all_distance.index(exp_conditions[i_exp][0])]
+    i_exp = 0
+    last_angle = 0
+    while i_exp < len(exp_conditions):
+    #for i_exp in range(len(exp_conditions)):
+    
+        print('[debug info] %s: [distance, gain] = [%s, %s]' % (i_exp, *exp_conditions[i_exp]))
+        voro = vars()[voros[all_distance.index(exp_conditions[i_exp][0])]]
         trianglePosition = (0., hmd.eyeHeight, exp_conditions[i_exp][0])
         trianglePose = rifttools.LibOVRPose(trianglePosition)    
         
@@ -322,9 +327,9 @@ def run_exp(hmd, csv_hdl, bino, play_sound=True, stopApp = False):
         if stopApp:
             break
         
-        exp_id += 1
+        #exp_id += 1
         rand_ang = math.pi * (15 + random()*25)/180 * positive_or_negative()
-        print('==> New trial started')
+        
         # thumbstick value
         thumbVal = rand_ang
         stopCurr = False
@@ -336,7 +341,9 @@ def run_exp(hmd, csv_hdl, bino, play_sound=True, stopApp = False):
         
         
         while not stopCurr:
+            i_exp,results,stopCurr = check_rerun(i_exp,results,exp_conditions,stopCurr) # ===============> check rerun
             
+                
             currenttime = hmd.getPredictedDisplayTime()
             state = hmd.getTrackingState(currenttime)
             headPose = state.headPose.thePose
@@ -385,6 +392,7 @@ def run_exp(hmd, csv_hdl, bino, play_sound=True, stopApp = False):
                     hmd = red(hmd, headPose, i, redlight)
                     
                     GL.glColor3f(1.0, 1.0, 1.0)  # <<< reset the color manually
+                    
             hmd.flip()
             rawVal = hmd.getThumbstickValues(r'Touch', deadzone=True)[1]
             if rawVal[0] > 0.25:
@@ -394,43 +402,60 @@ def run_exp(hmd, csv_hdl, bino, play_sound=True, stopApp = False):
             elif rawVal[0] < -0.25:
                 thumbVal -= min_rotation
                 adjustment_cnt -= 1
-                
+            
+            
             if event.getKeys('q') or hmd.shouldQuit or hmd.getButtons('A', 'Touch', 'released')[0]:
-                print(' (Key stop by q)')
-                print('[log] Trial {}; Position: {}, rand_ang: {} (RAD), minimu rotation: {}, adjustment: {}, gain: {}'.format(
-                        exp_id, exp_conditions[i_exp][0], rand_ang, min_rotation,
-                        adjustment_cnt, exp_conditions[i_exp][1]
-                        ))
-                
-                csv_hdl.write('{}, {}, {}, {}, {}, {}\n'.format(
-                    exp_id, exp_conditions[i_exp][0], rand_ang, min_rotation,
+                results.append([i_exp, exp_conditions[i_exp][0], rand_ang, min_rotation,
                     adjustment_cnt, exp_conditions[i_exp][1]
-                    ))
+                    ])
                 
-                
-                stopCurr = True                                
+                last_angle = rand_ang
+                stopCurr = True
                 
                 beep.stop(reset=True)
                 beep.play()
-            elif event.getKeys('x') or hmd.shouldQuit or hmd.getButtons('B', 'Touch', 'released')[0]:
-                print(' program stop by x')
-                print('[log] Trial {}; Position: {}, rand_ang: {} (RAD), minimu rotation: {}, adjustment: {}, gain: {}'.format(
-                        exp_id, exp_conditions[i_exp][0], rand_ang, min_rotation,
-                        adjustment_cnt, exp_conditions[i_exp][1]
-                        ))
                 
-                csv_hdl.write('{}, {}, {}, {}, {}, {}\n'.format(
-                    exp_id, exp_conditions[i_exp][0], rand_ang, min_rotation,
+                i_exp += 1
+                
+            elif event.getKeys('x') or hmd.shouldQuit or hmd.getButtons('B', 'Touch', 'released')[0]:
+                print(' ==> program stoped or finished')
+                results.append([i_exp, exp_conditions[i_exp][0], rand_ang, min_rotation,
                     adjustment_cnt, exp_conditions[i_exp][1]
-                    ))
+                    ])
                 
                 stopApp = True
                 stopCurr = True
-            elif event.getKeys('r') or hmd.shouldRecenter:
+                
+            elif event.getKeys('c') or hmd.shouldRecenter:
                 hmd.recenterTrackingOrigin()
+            
+            
+            
+            
+    return stopApp,results
+
+def check_rerun(i_exp,results,exp_conditions,stopCurr):
+    if event.getKeys('r'): # ===========> rerun last experiment                
+        if len(results)>=1:
+            del results[-1]
+            print('[warning] opt to rerun last experiment %s: [distance, gain] = [%s, %s]' % (i_exp-1, *exp_conditions[i_exp-1]))
+            i_exp -= 1
+            stopCurr = True
+        else:
+            print('[warning] cannot rerun at %s' % i_exp)
+        
+    return i_exp,results,stopCurr
+
+def write2file(csvhdl,data):
     
-    return stopApp
+    for ir in range(len(data)):
+        curr_data = data[ir]
+        csvhdl.write('{}, {}, {}, {}, {}, {}\n'.format(*curr_data))
     
+    csvhdl.close()
+    
+    return
+
 if __name__ == "__main__":
     
     #OUTPUT_FILE = r'output'
@@ -446,10 +471,12 @@ if __name__ == "__main__":
     myDlg.addField('Total Session:', 3)
     # 2
     myDlg.addText('Conditions')
-    myDlg.addField('Viewing Condition:', choices=["bino", "mono"])
+    myDlg.addField('Stereo Condition:', choices=["bino", "mono"])
     # 3
-    myDlg.addField('Motion Condition:', choices=["motion", "static"])
+    myDlg.addField('Motion Condition:', choices=["static", "motion"])
     # 4
+    myDlg.addField('Texture Condition:', choices=["constant", "scaled"])
+    # 5
     myDlg.addText('Data')
     myDlg.addField('Output directory:', './output')
     ok_data = myDlg.show()  # show dialog and wait for OK or Cancel
@@ -460,7 +487,7 @@ if __name__ == "__main__":
                           winType='glfw', #unit='norm',
                           useLights=True)
         OUTPUT_FILE = r'{}'.format(ok_data[0])
-        OUTPUT_PATH = r'{}'.format(ok_data[4])
+        OUTPUT_PATH = r'{}'.format(ok_data[5])
         
         if ok_data[2] in ["bino"]:
             bino = True
@@ -471,15 +498,20 @@ if __name__ == "__main__":
             play_sound = True
         else:
             play_sound = False
+        if ok_data[4] in["constant"]:
+            voros = ["voro50","voro50","voro50"]
+        else:
+            voros = ["voro56","voro53","voro50"]
         
         csv_hdl = init_output(OUTPUT_PATH, OUTPUT_FILE, ok_data)
         
+        exp_results = []
         for i_repeat in range(ok_data[1]):
             if stopApp:
                 break
-            stopApp = run_exp(hmd, csv_hdl, bino, play_sound, stopApp)
+            stopApp, exp_results = run_exp(hmd, bino, exp_results, play_sound, stopApp)
         
-        csv_hdl.close()
+        write2file(csv_hdl, exp_results)
         hmd.close()
         core.quit()
         
