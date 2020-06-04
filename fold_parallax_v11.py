@@ -336,7 +336,7 @@ def run_exp(hmd, bino, results, play_sound=True, stopApp = False):
     nextRound = False
     
     #exp_id = 0    
-    print('==> Starting Experiment')        
+    print('==> Starting a new round')        
     #while not nextRound and not stopApp and exp_id <= MAX_EXP:
     
         
@@ -500,11 +500,11 @@ if __name__ == "__main__":
     #n_repeat = 3
         
     myDlg = gui.Dlg(title="Fold Parallax")
-    myDlg.addText('Subject info')
+    myDlg.addText('Participant info')
     # 0
     myDlg.addField('Name:', 'default')
     # 1
-    myDlg.addField('Total Session:', 3)
+    myDlg.addField('# of Rounds:', 3)
     # 2
     myDlg.addText('Conditions')
     myDlg.addField('Stereo Condition:', choices=["bino", "mono"])
