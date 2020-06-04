@@ -1,6 +1,5 @@
 # fold_parallax
 
-
 ## Dependencies
 
 Need to use Python3.6

@@ -247,9 +247,12 @@ def run_exp(hmd, bino, results, play_sound=True, stopApp = False):
         all_gain = [1/2, 2/3, 4/5, 1, 5/4, 3/2, 2]
     else:
         all_gain = [1, 1, 1, 1, 1, 1, 1]
+    if ok_data[5] in ["constant"]:
+        all_width_shuffle = [1., 1., 1.]
+    else:
+        all_width_shuffle = [1., 1.125, 1.25]
     all_distance = [1.3, 1.4, 1.5]
     all_width = [1, 1.125, 1.25]
-    all_width_shuffle = [1, 1.125, 1.25]
     exp_conditions = []
     
     for i_g in range(len(all_gain)):
