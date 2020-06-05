@@ -10,25 +10,25 @@
 
 ```conda create -n psychxr python=3.6```
 
-3 - Each time when you run the experiment, you would need to activate the above enviroment by typing:
+3 - Each time you run the experiment, you would need to activate the above enviroment by typing:
 
 ```conda activate psychxr ```
 
-4 - type:
+4 - Install dependency pywinhook:
 
-```conda install swig ```
+```conda install -c conda-forge pywinhook ```
 
-5 - Install other dependencies, go inside "fold_parallax" folder:
+5 - Install Spyder:
 
-```cd <your path (e.g. d/OneDrive/fold_parallax)> ```
+```pip install spyder ```
 
-When you are at the location, type "ls", you should be able to see a file named "requirements.txt".
+6 - Install Psychxr and Psychopy:
 
-6 - type:
+```pip install psychxr psychopy```
 
-```pip install -r requirements.txt```
+7 - Run Oculus App, you might need to re-draw the guardian to visualize the stimuli properly, the instructions is in "gardian.pdf".
 
-7 - run fold_parallax_v...py file, you could do it using Spyder:
+8 - Go back to the command line, with the psychxr enviroment activated, run Spyder by typing:
 
 ```Spyder```
 
@@ -38,7 +38,7 @@ When you are at the location, type "ls", you should be able to see a file named 
 
 	- Vary the "Stereo Condition" and "Motion Condition" (both binary choices), you will have 4 experiments in total.
 
-9 - You might need to re-draw the guardian to visualize the stimuli properly, the instructions is in "gardian.pdf".
+9 - 
 
 10 - Only right hand controller is used.
  
