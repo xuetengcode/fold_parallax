@@ -48,11 +48,13 @@
 
 11 - Keyboard control:
 
+	- c: recenter the scene acrodding to your position and orientation;
+
 	- n: next step when blackout;
 
 	- q: next step when scene is presented;
 
-	- x: terminate when scene is presented
+	- x: terminate the whole experiment when scene is presented.
 
 12 - Participants are required to stand at the bar on the ground plane. If the scene is dimmed, it means the participant is out of 
 the sagittal range (front-back restriction).
