@@ -48,7 +48,7 @@
 
 11 - Keyboard control:
 
-	- c: recenter the scene acrodding to your position and orientation;
+	- c: recenter the scene according to your position and orientation;
 	
 	- r: return to the last trial when a mis-input  on the thumbstick was conducted;
 
