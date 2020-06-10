@@ -105,7 +105,7 @@ def create_aperture(y0=-0.3,y1=-3.):
 
 def create_floor():
     x_range = np.linspace(-2.0, 2.0, 3)
-    z_range = np.linspace(-5.0, 3.0, 3)
+    z_range = np.linspace(-1.0, 3.0, 3)
     x, z = np.meshgrid(x_range, z_range)    
     y = np.tile(np.array([0, 0, 0])-3, (3, 1))
     vao = mtx2vao(x, y, z)
