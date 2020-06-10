@@ -468,7 +468,7 @@ def run_exp(hmd, bino, results, play_sound=True, stopApp = False):
                 updated=libovr.LibOVRPose(pos=(0,pos0[1],-1), ori=ori0)
                 
                 libovr.specifyTrackingOrigin(updated)
-                updated.setIdentity()
+                #pos0.setIdentity()
             
             
             
