@@ -24,15 +24,15 @@ import sys
 def red_activate(hmd, head_pos, eye, redlight, hit_left, hit_right, red_cnt_l=0, red_cnt_r=0):
     light_shift = 0.9
     parallax_thr = 0.05
-    if head_pos.pos[0] > parallax_thr and eye == 'right':
-        redlight.pos = (light_shift, 0.)
+    if head_pos.pos[0] > parallax_thr and eye == 'left':
+        redlight.pos = (-light_shift, 0.)
         redlight.draw(hmd)
         if hit_left:
             red_cnt_r += 1
             hit_right = True
             hit_left = False
-    elif head_pos.pos[0] < -parallax_thr and eye == 'left':
-        redlight.pos = (-light_shift, 0.)
+    elif head_pos.pos[0] < -parallax_thr and eye == 'right':
+        redlight.pos = (light_shift, 0.)
         redlight.draw(hmd)
         if hit_right:
             red_cnt_l += 1
@@ -41,13 +41,14 @@ def red_activate(hmd, head_pos, eye, redlight, hit_left, hit_right, red_cnt_l=0,
     return hmd, hit_left, hit_right, red_cnt_l, red_cnt_r
 
 def red(hmd, head_pos, eye, redlight):
+    #print(head_pos.pos)
     light_shift = 0.9
     parallax_thr = 0.05
-    if head_pos.pos[0] > parallax_thr and eye == 'right':
-        redlight.pos = (light_shift, 0.)
-        redlight.draw(hmd)
-    elif head_pos.pos[0] < -parallax_thr and eye == 'left':
+    if head_pos.pos[0] > parallax_thr and eye == 'left':
         redlight.pos = (-light_shift, 0.)
+        redlight.draw(hmd)
+    elif head_pos.pos[0] < -parallax_thr and eye == 'right':
+        redlight.pos = (light_shift, 0.)
         redlight.draw(hmd)
             
     return hmd
@@ -94,27 +95,30 @@ def render2hmd(stim, hmd, voro, rotation_mtx):
     return hmd
 
 def create_aperture(y0=-0.3,y1=-3.):
-    x_range = np.linspace(-3.0, 3.0, 3)
+    x_range = np.linspace(3.0, -3.0, 3)
     y_range = np.linspace(y0, y1, 3)
     x, y = np.meshgrid(x_range, y_range)
-    z = np.tile(np.array([0.5, 0.5, 0.5]), (3, 1))
+    z = np.tile(np.array([-0.5, -0.5, -0.5]), (3, 1))
 
     vao = mtx2vao(x, y, z)
 
     return vao
 
 def create_floor():
+# =============================================================================
+#     z_range = np.linspace(-1.0, 3.0, 3)
+# =============================================================================
     x_range = np.linspace(-2.0, 2.0, 3)
-    z_range = np.linspace(-1.0, 3.0, 3)
+    z_range = np.linspace(-3.0, 1.0, 3)
     x, z = np.meshgrid(x_range, z_range)    
     y = np.tile(np.array([0, 0, 0])-3, (3, 1))
     vao = mtx2vao(x, y, z)
     return vao
 
 def create_origin(y0=-2.8): 
-    x_range = np.linspace(-0.3, 0.3, 3)
+    x_range = np.linspace(0.3, -0.3, 3)
     #z = np.linspace(1.55, 1.7, 3)
-    z_range = np.linspace(1.55, 1.7, 3)
+    z_range = np.linspace(-1.55, -1.7, 3)
     x, z = np.meshgrid(x_range, z_range)
     
     y = np.tile(np.array([y0, y0, y0]), (3, 1))
@@ -125,15 +129,16 @@ def create_origin(y0=-2.8):
 def create_half_fold(width, shape='left'):
     
     if shape in ['left']:
-        x_range = np.linspace(-1*width, 0.0, 2)
-        y_range = np.linspace(1.0, -1.0, 2)
-        x, y = np.meshgrid(x_range, y_range)
-        z = np.tile(np.array([-1*width, 0]), (2, 1))
-    else:
         x_range = np.linspace(0.0, 1*width, 2)
-        y_range = np.linspace(1.0, -1.0, 2)
+        y_range = np.linspace(-1.0, 1.0, 2)
         x, y = np.meshgrid(x_range, y_range)
-        z = np.tile(np.array([0, -1*width]), (2, 1))
+        z = np.tile(np.array([0, 1*width]), (2, 1))
+    else:
+        x_range = np.linspace(-1*width, 0.0, 2)
+        y_range = np.linspace(-1.0, 1.0, 2)
+        x, y = np.meshgrid(x_range, y_range)
+        z = np.tile(np.array([1*width, 0]), (2, 1))
+        
         
     vao = mtx2vao(x, y, z)
     return vao
@@ -144,7 +149,7 @@ def positive_or_negative():
     else:
         return -1    
 
-def black(hmd, head_pos, eye, blacklight, fr=3., bk=3.1): # fr=-0.12, bk=0.05
+def black(hmd, head_pos, eye, blacklight, fr=-0.19, bk=-0.09): # fr=-0.12, bk=0.05   -0.73 -0.63
     #print(head_pos.pos)
     #print(head_pos.pos[2] > bk)
     #print(head_pos.pos[2] < fr)
@@ -285,7 +290,7 @@ def run_exp(hmd, bino, results, play_sound=True, stopApp = False):
     # https://www.psychopy.org/api/visual/lightsource.html#psychopy.visual.LightSource
     #dirLight = LightSource(hmd, pos=(0., 1., 0.), ambientColor=(0.0, 1.0, 0.0), lightType='point')
     #hmd.lights = dirLight    
-    redlight = visual.GratingStim(hmd, mask='gauss', size=1.0, tex=None, color='red', contrast=0.5, units='norm')
+    redlight = visual.GratingStim(hmd, mask='gauss', size=1., tex=None, color='red', contrast=0.5, units='norm')
     redlight.setOpacity(1) # 0.5
     blacklight = visual.GratingStim(hmd, mask='gauss', size=3.0, tex=None, color=(0,0,0), contrast=0.8, units='norm')
     blacklight.setOpacity(0.8)
@@ -464,7 +469,7 @@ def run_exp(hmd, bino, results, play_sound=True, stopApp = False):
                 stopCurr = True
                 
             elif event.getKeys('c') or hmd.shouldRecenter:
-                if not updated:
+                #if not updated:
                         
                     pos0,ori0 = headPose.posOri
                     #ori0[-1]=1
@@ -497,7 +502,7 @@ def run_exp(hmd, bino, results, play_sound=True, stopApp = False):
                     
                     #updated=libovr.LibOVRPose([pos0[0], 0, 5], ori=ori0) # -90 deg
                     
-                    updated=libovr.LibOVRPose([0.4,0,-3.2], ori=ori0)
+                    updated=libovr.LibOVRPose([0,0,0], ori=ori0)
                     libovr.specifyTrackingOrigin(updated)
                     #pos0.setIdentity()
                     
@@ -562,6 +567,10 @@ if __name__ == "__main__":
         hmd = visual.Rift(samples=32, color=(-1, -1, -1), waitBlanking=False, 
                           winType='glfw', #unit='norm',
                           useLights=True)
+        
+        #updated=libovr.LibOVRPose([0.4,0,-3.2])
+        #libovr.specifyTrackingOrigin(updated)
+        
         OUTPUT_FILE = r'{}'.format(ok_data[0])
         OUTPUT_PATH = r'{}'.format(ok_data[6])
         
