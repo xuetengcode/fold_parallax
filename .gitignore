@@ -1,3 +1,5 @@
 ./output/
 .pyc
 .csv
+fold_parallax_v11recenter.py
+fold_parallax_v12.py
