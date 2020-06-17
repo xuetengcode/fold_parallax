@@ -72,17 +72,17 @@ def mtx2vao(xx, yy, zz):
 
 def render_plane(stim, hmd, voro, trianglePose):
     sc = mathtools.scaleMatrix((1., 1., 1.0))
-    rotation_mtx = mathtools.concatenate(
+    offset_mtx = mathtools.concatenate(
         [sc, trianglePose.getModelMatrix()], dtype=np.float32)
 
-    rotation_mtx = arraytools.array2pointer(rotation_mtx)    
-    hmd = render2hmd(stim, hmd, voro, rotation_mtx)    
+    offset_mtx = arraytools.array2pointer(offset_mtx)    
+    hmd = render2hmd(stim, hmd, voro, offset_mtx)    
     return hmd
 
-def render2hmd(stim, hmd, voro, rotation_mtx):    
+def render2hmd(stim, hmd, voro, offset_mtx):    
     hmd.draw3d = True
     GL.glPushMatrix()
-    GL.glMultTransposeMatrixf(rotation_mtx)
+    GL.glMultTransposeMatrixf(offset_mtx)
     GL.glEnable(GL.GL_TEXTURE_2D)
     GL.glActiveTexture(GL.GL_TEXTURE0)
     GL.glBindTexture(GL.GL_TEXTURE_2D, voro.name)
@@ -129,15 +129,15 @@ def create_origin(y0=-2.8):
 def create_half_fold(width, shape='left'):
     
     if shape in ['left']:
-        x_range = np.linspace(0.0, 1*width, 2)
-        y_range = np.linspace(-1.0, 1.0, 2)
+        x_range = np.linspace(0.0, 2*width, 2)
+        y_range = np.linspace(-2.0, 2.0, 2)
         x, y = np.meshgrid(x_range, y_range)
-        z = np.tile(np.array([0, 1*width]), (2, 1))
+        z = np.tile(np.array([0, 2*width]), (2, 1))
     else:
-        x_range = np.linspace(-1*width, 0.0, 2)
-        y_range = np.linspace(-1.0, 1.0, 2)
+        x_range = np.linspace(-2*width, 0.0, 2)
+        y_range = np.linspace(-2.0, 2.0, 2)
         x, y = np.meshgrid(x_range, y_range)
-        z = np.tile(np.array([1*width, 0]), (2, 1))
+        z = np.tile(np.array([2*width, 0]), (2, 1))
         
         
     vao = mtx2vao(x, y, z)
@@ -149,8 +149,8 @@ def positive_or_negative():
     else:
         return -1    
 
-def black(hmd, head_pos, eye, blacklight, fr=-0.19, bk=-0.09): # fr=-0.12, bk=0.05   -0.73 -0.63
-    #print(head_pos.pos)
+def black(hmd, head_pos, eye, blacklight, fr=-0.475, bk=-0.375): # fr=-0.12, bk=0.05   -0.73 -0.63
+    print(head_pos.pos)
     #print(head_pos.pos[2] > bk)
     #print(head_pos.pos[2] < fr)
     if head_pos.pos[2] > bk or head_pos.pos[2] < fr:
@@ -168,13 +168,13 @@ def black(hmd, head_pos, eye, blacklight, fr=-0.19, bk=-0.09): # fr=-0.12, bk=0.
 
 
 # In[]
-def gen_rotation_mtx(input_ang, trianglePose):
+def gen_offset_mtx(input_ang, trianglePose):
     rotation = mathtools.rotationMatrix(input_ang * 180 / math.pi, [0., 1., 0.]) # <<<<< rotation
-    rotation_mtx = mathtools.concatenate(
+    offset_mtx = mathtools.concatenate(
                     [rotation, trianglePose.getModelMatrix()], dtype=np.float32)
-    rotation_mtx = arraytools.array2pointer(rotation_mtx)
+    offset_mtx = arraytools.array2pointer(offset_mtx)
     
-    return rotation_mtx
+    return offset_mtx
 
 def check_dir(folder):
     if not os.path.isdir('output'):
@@ -243,11 +243,11 @@ def blackscene(hmd, redlight, metronome, play_sound, timediff, lasttime):
              continue
     return lasttime
 # In[]
-def run_exp(hmd, bino, results, play_sound=True, stopApp = False):
+def run_exp(hmd, bino, results, play_sound=True, stopApp = False, scene_head_pose0=[]):
     
     IMG_PATH = r'.\images'
     img_path2 = r'.\images'
-    
+    shift = 1
     if ok_data[3] in ["motion"]:
         all_gain = [1/2, 2/3, 4/5, 1, 5/4, 3/2, 2]
     else:
@@ -290,7 +290,7 @@ def run_exp(hmd, bino, results, play_sound=True, stopApp = False):
     # https://www.psychopy.org/api/visual/lightsource.html#psychopy.visual.LightSource
     #dirLight = LightSource(hmd, pos=(0., 1., 0.), ambientColor=(0.0, 1.0, 0.0), lightType='point')
     #hmd.lights = dirLight    
-    redlight = visual.GratingStim(hmd, mask='gauss', size=1., tex=None, color='red', contrast=0.5, units='norm')
+    redlight = visual.GratingStim(hmd, mask='gauss', size=1.0, tex=None, color='red', contrast=0.5, units='norm')
     redlight.setOpacity(1) # 0.5
     blacklight = visual.GratingStim(hmd, mask='gauss', size=3.0, tex=None, color=(0,0,0), contrast=0.8, units='norm')
     blacklight.setOpacity(0.8)
@@ -301,7 +301,7 @@ def run_exp(hmd, bino, results, play_sound=True, stopApp = False):
 # =============================================================================
     stim_floor = create_floor()
     stim_aperture_low = create_aperture()
-    stim_aperture_high = create_aperture(11.3, 0.3)
+    stim_aperture_high = create_aperture(11.3, 0.2)
     stim_origin = create_origin()    
 
 # =============================================================================
@@ -359,8 +359,11 @@ def run_exp(hmd, bino, results, play_sound=True, stopApp = False):
         stim_left = exp_conditions[i_exp][3]
         stim_right = exp_conditions[i_exp][4]
         voro = exp_conditions[i_exp][5]
-        trianglePosition = (0., hmd.eyeHeight, exp_conditions[i_exp][0])
+        trianglePosition0 = (scene_head_pose0[0], hmd.eyeHeight, scene_head_pose0[-1] + shift)
+        trianglePosition = (scene_head_pose0[0], hmd.eyeHeight, exp_conditions[i_exp][0] + scene_head_pose0[-1] + shift)
+        trianglePose0 = rifttools.LibOVRPose(trianglePosition0)    
         trianglePose = rifttools.LibOVRPose(trianglePosition)    
+          
         
         
         if stopApp:
@@ -413,18 +416,18 @@ def run_exp(hmd, bino, results, play_sound=True, stopApp = False):
                     hmd, blacklight, dimming = black(hmd, headPose, i, blacklight)
                     hmd.setRiftView()
                     #--------------- origin
-                    hmd = render_plane(stim_origin, hmd, WhiteTexture, trianglePose)
+                    hmd = render_plane(stim_origin, hmd, WhiteTexture, trianglePose0)
                     #--------------- aperture
-                    hmd = render_plane(stim_aperture_low, hmd, BlackoutTexture, trianglePose)
-                    hmd = render_plane(stim_aperture_high, hmd, BlackoutTexture, trianglePose)
+                    hmd = render_plane(stim_aperture_low, hmd, BlackoutTexture, trianglePose0)
+                    hmd = render_plane(stim_aperture_high, hmd, BlackoutTexture, trianglePose0)
                     #--------------- floor
-                    hmd = render_plane(stim_floor, hmd, FloorTexture, trianglePose)
+                    hmd = render_plane(stim_floor, hmd, FloorTexture, trianglePose0)
                     #-------------- the left half prism
-                    rotation_mtx = gen_rotation_mtx(adju_ang, trianglePose)
-                    hmd = render2hmd(stim_left, hmd, voro, rotation_mtx)
+                    offset_mtx = gen_offset_mtx(adju_ang, trianglePose)
+                    hmd = render2hmd(stim_left, hmd, voro, offset_mtx)
                     #-------------- the right half prism
-                    rotation_mtx = gen_rotation_mtx(-adju_ang, trianglePose)
-                    hmd = render2hmd(stim_right, hmd, voro, rotation_mtx)
+                    offset_mtx = gen_offset_mtx(-adju_ang, trianglePose)
+                    hmd = render2hmd(stim_right, hmd, voro, offset_mtx)
                     if dimming:
                         skydark.draw()
                     else:
@@ -468,13 +471,15 @@ def run_exp(hmd, bino, results, play_sound=True, stopApp = False):
                 stopApp = True
                 stopCurr = True
                 
-            elif event.getKeys('c') or hmd.shouldRecenter:
+            elif event.getKeys('c') or hmd.shouldRecenter or hmd.getButtons('X', 'Touch', 'released')[0]:
                 #if not updated:
                         
                     pos0,ori0 = headPose.posOri
                     #ori0[-1]=1
-                    print(ori0)
-                    print(pos0)
+# =============================================================================
+#                     print(ori0)
+#                     print(pos0)
+# =============================================================================
                     #updated=libovr.LibOVRPose(pos=(0,pos0[1],0), ori=ori0)
                     #updated=libovr.LibOVRPose(pos0, ori=ori0)
                     
@@ -567,7 +572,10 @@ if __name__ == "__main__":
         hmd = visual.Rift(samples=32, color=(-1, -1, -1), waitBlanking=False, 
                           winType='glfw', #unit='norm',
                           useLights=True)
-        
+        currenttime0 = hmd.getPredictedDisplayTime()
+        state0 = hmd.getTrackingState(currenttime0)
+        headPose0 = state0.headPose.thePose
+        scene_head_pose0 = libovr.LibOVRPose(*headPose0.posOri).pos        
         #updated=libovr.LibOVRPose([0.4,0,-3.2])
         #libovr.specifyTrackingOrigin(updated)
         
@@ -586,7 +594,7 @@ if __name__ == "__main__":
         if ok_data[4] in["constant"]:
             voros = ["voronoi_50","voronoi_50","voronoi_50"]
         else:
-            voros = ["voronoi_50.1","voronoi_50.2","voronoi_50"]
+            voros = ["voronoi_50.2","voronoi_50.1","voronoi_50"]
         if ok_data[5] in["constant"]:
             widths = ["wide","wide","wide"]
         else:
@@ -597,7 +605,7 @@ if __name__ == "__main__":
         for i_repeat in range(ok_data[1]):
             if stopApp:
                 break
-            stopApp, exp_results = run_exp(hmd, bino, exp_results, play_sound, stopApp)
+            stopApp, exp_results = run_exp(hmd, bino, exp_results, play_sound, stopApp, scene_head_pose0)
         
         write2file(csv_hdl, exp_results)
         hmd.close()
