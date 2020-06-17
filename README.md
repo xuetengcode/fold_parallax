@@ -50,9 +50,9 @@
  
 14 - Calibrate the scene in VR if needed, see "calibration.pdf":
 	
-	- press "n" on the keyboard to visualize the scene if blackout;
+	- Controllers: right hand button "A" to visualize the scene if blackout for static condition (a left-right parallax for motion), then left hand button "X" to calibrate the position/orientation of the scene;
 	
-	- press "c" to calibrate the orientation of the scene.
+	- Keyboard: "n" to visualize the scene if blackout for static condition (a left-right parallax for motion), then "c" to calibrate the orientation of the scene.
 	
 15 - Keyboard control:
 
@@ -66,10 +66,12 @@
 
 	- x: terminate the entire experiment when scene is presented.
 
-16 - Right hand controller:
+16 - Hand controllers:
  
-	- Button "B": next step (visualize the scene when blackout (static), enter data and go blackout when the scene is presented);
+	- Button "X" (left hand): calibration based on your current position and orientation;
+	
+	- Button "B" (right hand): next step (visualize the scene when blackout (static), enter data and go blackout when the scene is presented);
 
-	- Button "A": exit when the scene is presented.
+	- Button "A" (right hand): exit when the scene is presented.
 
 17 - After you are done with all 4 experiments, zip the "output" folder and email me your data.
