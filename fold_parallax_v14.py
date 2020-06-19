@@ -93,7 +93,7 @@ def render2hmd(stim, hmd, voro, offset_mtx):
     hmd.draw3d = False    
     return hmd
 
-def create_aperture(y0=-0.25,y1=-2.8):
+def create_aperture(y0=-0.35,y1=-2.8):
     x_range = np.linspace(-3.0, 3.0, 2)
     y_range = np.linspace(y0, y1, 2)
     x, y = np.meshgrid(x_range, y_range)
@@ -309,7 +309,7 @@ def run_exp(hmd, bino, results, play_sound=True, stopApp = False, scene_head_pos
 # =============================================================================
     stim_floor = create_floor()
     stim_aperture_low = create_aperture()
-    stim_aperture_high = create_aperture(10, 0.25)
+    stim_aperture_high = create_aperture(10, 0.2)
     stim_origin = create_origin()    
 
 # =============================================================================
@@ -369,7 +369,7 @@ def run_exp(hmd, bino, results, play_sound=True, stopApp = False, scene_head_pos
     while i_exp < len(exp_conditions):
     #for i_exp in range(len(exp_conditions)):
     
-        print('[debug info] %s: [distance, gain, width] = [%s, %s, %s, %s, %s, %s]' % (i_exp, *exp_conditions[i_exp]))
+        print('[debug info] %s: [distance, gain, width] = [%s, %s, %s]' % (i_exp, *exp_conditions[i_exp][:3]))
         
         stim_left = exp_conditions[i_exp][3]
         stim_right = exp_conditions[i_exp][4]
