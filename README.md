@@ -59,7 +59,7 @@
 	
 15 - Keyboard control:
 
-	- c: calibrate the scene according to your orientation, please note the calibrated orientation will be your posterior direction;
+	- c: calibrate the scene according to your orientation/position;
 	
 	- r: return to the last trial when a mis-input on the thumbstick was conducted;
 
