@@ -84,6 +84,6 @@
 	
 	- Button "A" (right hand): next step (visualize the scene when blackout (static), enter data and go blackout when the scene is presented);
 
-	- Button "B" (right hand): exit when the scene is presented.
+	- Button "B" (right hand): terminate the entire experiment when the scene is presented.
 
 17 - After you are done with all 4 experiments, zip the "output" folder and email me your data.
