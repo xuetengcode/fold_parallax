@@ -1,6 +1,6 @@
 # fold_parallax
 
-## Dependencies
+## Dependencies & Instructions
 
 0 - Download everything into your computer.
 
