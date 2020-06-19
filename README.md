@@ -46,7 +46,7 @@
 					30 cm (aligned with the metronome audio). The scene is activated by a full left-right
 					movement(indicated by red boundary lights).
 	
-	- For Motion Condition "static": scene is activated by button "A" or "n" on the keyboard.
+	- For Motion Condition "static": scene is activated by button "A" on right hand controller or "n" on the keyboard.
 					Participants are required to stand still at the ground bar and make sure neither 
 					boundary light is on.
 
@@ -84,7 +84,8 @@
  
 	- Button "X" (left hand): calibration based on your current position and orientation;
 	
-	- Button "A" (right hand): next step (visualize the scene when blackout (static), enter data and go blackout when the scene is presented);
+	- Button "A" (right hand): next step - visualize the scene when blackout (static), 
+								or enter data and go blackout when the scene is presented);
 
 	- Button "B" (right hand): terminate the entire experiment when the scene is presented.
 
