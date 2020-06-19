@@ -32,7 +32,7 @@
 
 ```Spyder```
 
-9 - F5 to run the script, a dialogue will pop up:
+9 - In Spyder, open the "fold_parallax_v_number.py". F5 to run the script, a dialogue will pop up:
 
 	- Put your name or initial in Participant Info;
 
