@@ -48,10 +48,12 @@
 
 13 - Participants are required to maintain the motion condition while adjusting the angle of the fold using the thumb stick until the fold is orthogonal. When the adjustment is final, press button "B" to proceed.
  
-14 - Calibrate the scene in VR if needed, see "calibration.pdf". Note that if you want to bring the scene closer to you, walk to the desired position then calibrate while you are looking at the existing ground bar:
+14 - Calibrate the scene in VR if needed, see "calibration_v14.pdf".
+	
+	Note that if you want to bring the scene closer to you, walk to the desired position then calibrate while you are looking at the existing ground bar
 	
 	- Controllers: right hand button "A" to visualize the scene if blackout for static condition (a left-right parallax for motion),
-				then left hand button "X" to calibrate the position/orientation of the scene;
+		then left hand button "X" to calibrate the position/orientation of the scene;
 	
 	- Keyboard: "n" to visualize the scene if blackout for static condition (a left-right parallax for motion), then "c" to calibrate the orientation of the scene.
 	
