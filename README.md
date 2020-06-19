@@ -85,7 +85,7 @@
 	- Button "X" (left hand): calibration based on your current position and orientation;
 	
 	- Button "A" (right hand): next step - visualize the scene when blackout (static), 
-				or enter data and go blackout when the scene is presented);
+						or enter data and go blackout when the scene is presented);
 
 	- Button "B" (right hand): terminate the entire experiment when the scene is presented.
 
