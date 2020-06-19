@@ -56,11 +56,11 @@
 	Walk to the desired position then calibrate while you are looking at the existing ground bar
 	or while facing the desired orientation. See "calibration_v14.pdf" for graphic demonstrations.
 	
-	- Controllers: right hand button "A" to visualize the scene if blackout for static condition (a left-right parallax for motion),
-			then left hand button "X" to calibrate the position/orientation of the scene;
+	When the scene is presented:
 	
-	- Keyboard: "n" to visualize the scene if blackout for static condition (a left-right parallax for motion),
-			then "c" to calibrate the orientation of the scene.
+	- Left hand controller - button "X";
+	
+	- Keyboard - "c" to calibrate.
 	
 13 - If the scene is dimmed, it means the participant is out of the sagittal range (front-back restriction). Move along the sagittal axis to disable the dimming.
 
