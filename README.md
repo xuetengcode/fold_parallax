@@ -42,11 +42,13 @@
 
 10 - To visualize the scene:
 	
-	- For Motion Condition "motion": participants are reuqired to do parallax motion (aligned with the metronome audio) from left to right at about 30 cm.
-					The scene is activated by a full left-right movement (indicated by red boundary lighes).
+	- For Motion Condition "motion": participants are reuqired to do parallax motion from left to right at about
+					30 cm (aligned with the metronome audio). The scene is activated by a full left-right
+					movement(indicated by red boundary lights).
 	
 	- For Motion Condition "static": scene is activated by button "A" or "n" on the keyboard.
-					Participants are required to stand still at the ground bar and make sure neither boundary light is on.
+					Participants are required to stand still at the ground bar and make sure neither 
+					boundary light is on.
 
 11 - When a scene is presented, a ground plane will appear, together with a white bar on it.
 	Participants are required to stand on top of the bar while facing the voronoi fold stimuli.
