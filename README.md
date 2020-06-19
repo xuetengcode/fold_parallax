@@ -82,11 +82,11 @@
 
 16 - Hand controllers:
  
-	- Button "X" (left hand): calibration based on your current position and orientation;
+	- Button "X" (left hand): to calibrate based on your current position and orientation;
 	
-	- Button "A" (right hand): next step - visualize the scene when blackout (static), 
+	- Button "A" (right hand): to proceed - visualize the scene when blackout (static), 
 						or enter data and go blackout when the scene is presented;
 
-	- Button "B" (right hand): terminate the entire experiment when the scene is presented.
+	- Button "B" (right hand): to terminate the entire experiment when the scene is presented.
 
 17 - After you are done with all 4 experiments, zip the "output" folder and email me your data.
