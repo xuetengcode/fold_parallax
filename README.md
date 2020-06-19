@@ -42,7 +42,7 @@
 
 10 - For Motion Condition - "motion", participants are reuqired to do parallax motion (aligned with the metronome audio) from left to right at about 30 cm. The next scene is only activated by a full left-right movement (indicated by red boundary lighes).
 
-11 - For Motion Condition - "static", scene is activated by button "B" or "n" on the keyboard. Participants are required to stand still at the ground bar and make sure neither boundary light is on.
+11 - For Motion Condition - "static", scene is activated by button "A" or "n" on the keyboard. Participants are required to stand still at the ground bar and make sure neither boundary light is on.
 
 12 - When a scene is presented, a ground plane will appear, together with a white bar on it. Participants are required to stand on top of the bar while facing the voronoi fold stimuli. If the scene is dimmed, it means the participant is out of the sagittal range (front-back restriction). Move along the sagittal axis to disable the dimming.
 
