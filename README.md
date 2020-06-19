@@ -50,7 +50,7 @@
  
 14 - Calibrate the scene in VR if needed, see "calibration_v14.pdf".
 	
-	Note that if you want to bring the scene closer to you, walk to the desired position then calibrate while you are looking at the existing ground bar
+	Note that if you want to bring the scene closer to you, walk to the desired position then calibrate while you are looking at the existing ground bar.
 	
 	- Controllers: right hand button "A" to visualize the scene if blackout for static condition (a left-right parallax for motion),
 		then left hand button "X" to calibrate the position/orientation of the scene;
