@@ -43,10 +43,10 @@
 10 - To visualize the scene:
 	
 	- For Motion Condition "motion", participants are reuqired to do parallax motion (aligned with the metronome audio) from left to right at about 30 cm.
-		The scene is activated by a full left-right movement (indicated by red boundary lighes).
+				The scene is activated by a full left-right movement (indicated by red boundary lighes).
 	
 	- For Motion Condition "static", scene is activated by button "A" or "n" on the keyboard.
-		Participants are required to stand still at the ground bar and make sure neither boundary light is on.
+				Participants are required to stand still at the ground bar and make sure neither boundary light is on.
 
 11 - When a scene is presented, a ground plane will appear, together with a white bar on it.
 	Participants are required to stand on top of the bar while facing the voronoi fold stimuli.
@@ -57,9 +57,10 @@
 	or while facing the desired orientation. See "calibration_v14.pdf" for graphic demonstrations.
 	
 	- Controllers: right hand button "A" to visualize the scene if blackout for static condition (a left-right parallax for motion),
-		then left hand button "X" to calibrate the position/orientation of the scene;
+			then left hand button "X" to calibrate the position/orientation of the scene;
 	
-	- Keyboard: "n" to visualize the scene if blackout for static condition (a left-right parallax for motion), then "c" to calibrate the orientation of the scene.
+	- Keyboard: "n" to visualize the scene if blackout for static condition (a left-right parallax for motion),
+			then "c" to calibrate the orientation of the scene.
 	
 13 - If the scene is dimmed, it means the participant is out of the sagittal range (front-back restriction). Move along the sagittal axis to disable the dimming.
 
