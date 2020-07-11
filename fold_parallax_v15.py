@@ -141,18 +141,11 @@ def create_half_fold(width, shape='left'):
     vao = mtx2vao(x, y, z)
     return vao
 
-def create_central_line(width, shape='left'):
-    
-    if shape in ['left']:
-        x_range = np.linspace(-1.0*width, 0.0, 2)
-        y_range = np.linspace(2, -2, 2)
-        x, y = np.meshgrid(x_range, y_range)
-        z = np.tile(np.array([-1.0*width, 0]), (2, 1))
-    else:
-        x_range = np.linspace(0.0, 1.0*width, 2)
-        y_range = np.linspace(2, -2, 2)
-        x, y = np.meshgrid(x_range, y_range)
-        z = np.tile(np.array([0, -1.0*width]), (2, 1))
+def create_central_line():    
+    x_range = np.linspace(-0.001, 0.001, 2)
+    y_range = np.linspace(2, -2, 2)
+    x, y = np.meshgrid(x_range, y_range)
+    z = np.tile(np.array([0, 0]), (2, 1))
         
     vao = mtx2vao(x, y, z)
     return vao
@@ -268,8 +261,8 @@ def blackscene(hmd, redlight, metronome, play_sound, timediff, lasttime):
 # In[]
 def run_exp(hmd, bino, results, play_sound=True, stopApp = False, scene_head_pose0=[0,0,0]):
     
-    IMG_PATH = r'.\images'
-    img_path2 = r'.\images'
+    IMG_PATH = r'.\images_v15'
+    img_path2 = r'.\images_v15'
     OFFSET = -1
     
     if ok_data[3] in ["motion"]:
@@ -293,6 +286,7 @@ def run_exp(hmd, bino, results, play_sound=True, stopApp = False, scene_head_pos
                 voro = gltools.createTexImage2dFromFile(r'{}'.format(os.path.join(IMG_PATH, voro_str)))            
                 left = create_half_fold(all_width_shuffle[i_d],'left')
                 right = create_half_fold(all_width_shuffle[i_d],'right')
+                
                 exp_conditions.append([all_distance[i_d], all_gain[i_g], all_width_shuffle[i_d], left, right, voro])
     shuffle(exp_conditions)
 
@@ -326,7 +320,8 @@ def run_exp(hmd, bino, results, play_sound=True, stopApp = False, scene_head_pos
     stim_floor = create_floor()
     stim_aperture_low = create_aperture()
     stim_aperture_high = create_aperture(10, 0.2)
-    stim_origin = create_origin()    
+    stim_origin = create_origin()
+    stim_line = create_central_line()
 
 # =============================================================================
 #     voro_big = gltools.createTexImage2dFromFile(r'{}'.format(os.path.join(IMG_PATH, 'voronoi_50.png')))
@@ -460,6 +455,8 @@ def run_exp(hmd, bino, results, play_sound=True, stopApp = False, scene_head_pos
                     #-------------- the right half prism
                     offset_mtx = gen_offset_mtx(-adju_ang, trianglePose)
                     hmd = render2hmd(stim_right, hmd, voro, offset_mtx)
+                    #--------- central line
+                    hmd = render_plane(stim_line, hmd, BlackoutTexture, trianglePose)
                     if dimming:
                         skydark.draw()
                     else:
