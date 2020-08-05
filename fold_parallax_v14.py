@@ -141,18 +141,11 @@ def create_half_fold(width, shape='left'):
     vao = mtx2vao(x, y, z)
     return vao
 
-def create_central_line(width, shape='left'):
-    
-    if shape in ['left']:
-        x_range = np.linspace(-1.0*width, 0.0, 2)
-        y_range = np.linspace(2, -2, 2)
-        x, y = np.meshgrid(x_range, y_range)
-        z = np.tile(np.array([-1.0*width, 0]), (2, 1))
-    else:
-        x_range = np.linspace(0.0, 1.0*width, 2)
-        y_range = np.linspace(2, -2, 2)
-        x, y = np.meshgrid(x_range, y_range)
-        z = np.tile(np.array([0, -1.0*width]), (2, 1))
+def create_central_line():    
+    x_range = np.linspace(-0.001, 0.001, 2)
+    y_range = np.linspace(2, -2, 2)
+    x, y = np.meshgrid(x_range, y_range)
+    z = np.tile(np.array([0, 0]), (2, 1))
         
     vao = mtx2vao(x, y, z)
     return vao
@@ -293,6 +286,7 @@ def run_exp(hmd, bino, results, play_sound=True, stopApp = False, scene_head_pos
                 voro = gltools.createTexImage2dFromFile(r'{}'.format(os.path.join(IMG_PATH, voro_str)))            
                 left = create_half_fold(all_width_shuffle[i_d],'left')
                 right = create_half_fold(all_width_shuffle[i_d],'right')
+                line = create_central_line()
                 exp_conditions.append([all_distance[i_d], all_gain[i_g], all_width_shuffle[i_d], left, right, voro])
     shuffle(exp_conditions)
 
