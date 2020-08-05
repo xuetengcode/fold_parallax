@@ -18,13 +18,13 @@
 
 ```conda install -c conda-forge pywinhook ```
 
-5 - Install Spyder:
+5 - Install Psychxr and Psychopy:
 
-```pip install spyder ```
+```pip install psychxr psychopy ```
 
-6 - Install Psychxr and Psychopy:
+6 - Install Spyder:
 
-```pip install psychxr psychopy```
+```pip install spyder```
 
 7 - Run Oculus App, draw the guardian as a 16.5 * 16.5 ground marks (the little crossings in VR) square, to make it 3 m by 3 m in reality.
 	See Calibration_v14.pdf for graphical demonstrations.
