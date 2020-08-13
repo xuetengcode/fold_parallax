@@ -544,7 +544,7 @@ def run_exp(hmd, bino, results, play_sound=True, stopApp = False, scene_head_pos
                 
             
             
-    if stopApp and play_sound:
+    if stopApp:# and play_sound:
         metronome.stop(reset=True)
     return stopApp,results
 
