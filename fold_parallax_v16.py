@@ -261,8 +261,8 @@ def blackscene(hmd, redlight, metronome, play_sound, timediff, lasttime):
 # In[]
 def run_exp(hmd, bino, results, play_sound=True, stopApp = False, scene_head_pose0=[0,0,0]):
     
-    IMG_PATH = r'.\images_v15'
-    img_path2 = r'.\images_v15'
+    IMG_PATH = r'.\images'
+    img_path2 = r'.\images'
     OFFSET = -1
     
     if ok_data[3] in ["motion"]:
