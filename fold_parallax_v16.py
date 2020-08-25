@@ -543,10 +543,9 @@ def run_exp(hmd, bino, results, play_sound=True, stopApp = False, scene_head_pos
                     updated = True
                 
             
-            
     if stopApp:# and play_sound:
-        metronome.stop(reset=True)
-    return stopApp,results
+        metronome.stop(reset=True)        
+    return stopApp,results,metronome
 
 def check_rerun(i_exp,results,exp_conditions,stopCurr):
     if event.getKeys('r'): # ===========> rerun last experiment                
@@ -639,9 +638,10 @@ if __name__ == "__main__":
 #         for i_repeat in range(ok_data[1]):
 # =============================================================================               
         exp_results = []
-        stopApp, exp_results = run_exp(hmd, bino, exp_results, play_sound, stopApp)
+        stopApp, exp_results, metronome = run_exp(hmd, bino, exp_results, play_sound, stopApp)
         write2file(csv_hdl, exp_results)
         
+        metronome.stop(reset=True)
         hmd.close()
         core.quit()
         
