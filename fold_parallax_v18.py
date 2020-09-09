@@ -19,6 +19,8 @@ from psychopy.visual import LightSource
 import csv
 import time
 import sys
+import numpy as np
+
 
 # In[]
 def red_activate(hmd, head_pos, eye, redlight, hit_left, hit_right, red_cnt_l=0, red_cnt_r=0):
@@ -196,20 +198,6 @@ def expand_data(invar):
         invar = '0'+invar
     return invar
 
-def init_output(OUTPUT_PATH, outfile_base, play_sound=True, additional=True):
-    check_dir(OUTPUT_PATH)
-    if additional:
-        year, month, day, hour, minutes = map(int, time.strftime("%Y %m %d %H %M").split())
-        time_str = '-'.join([str(year), expand_data(str(month)), expand_data(str(day)), expand_data(str(hour)), expand_data(str(minutes))])
-    else:
-        time_str = ''
-    
-    time_str += '_' + ok_data[2] + '_' + ok_data[3] +  '_' + ok_data[4]+  '_' + ok_data[5]
-        
-    output_file = '_'.join([outfile_base, time_str, os.path.basename(sys.argv[0])]) + r'.csv'
-    csv_hdl = open(os.path.join(OUTPUT_PATH, output_file),'w')
-    
-    return csv_hdl
 
 def blackscene(hmd, redlight, metronome, play_sound, timediff, lasttime):
     
@@ -259,12 +247,19 @@ def blackscene(hmd, redlight, metronome, play_sound, timediff, lasttime):
              continue
     return lasttime
 # In[]
-def run_exp(hmd, bino, results, play_sound=True, stopApp = False, scene_head_pose0=[0,0,0]):
+def run_exp(hmd, bino, SEL,
+            TOTAL_EXP=63, play_sound=True, stopApp=False, scene_head_pose0=[0,0,0]):
     
+    results = []
     IMG_PATH = r'.\images'
     img_path2 = r'.\images'
     OFFSET = -1
+    all_logs = []
     
+    all_exp = np.arange(TOTAL_EXP)
+    shuffle(all_exp)
+    selected_exp = all_exp[:SEL]
+        
     if ok_data[3] in ["motion"]:
         all_gain = [1/2, 2/3, 4/5, 1, 5/4, 3/2, 2]
     else:
@@ -301,8 +296,6 @@ def run_exp(hmd, bino, results, play_sound=True, stopApp = False, scene_head_pos
     
     
     #--------------------------
-    
-    
     
     #hmd.ambientLight = [0.5, 0.5, 0.5]
     # https://www.psychopy.org/api/visual/lightsource.html#psychopy.visual.LightSource
@@ -379,7 +372,12 @@ def run_exp(hmd, bino, results, play_sound=True, stopApp = False, scene_head_pos
     updated = False
     while i_exp < len(exp_conditions):
     #for i_exp in range(len(exp_conditions)):
-    
+        local_log = []
+        if i_exp in selected_exp:
+            RECORD_LOG = True
+        else:
+            RECORD_LOG = False
+            
         print('[debug info] %s: [distance, gain, width] = [%s, %s, %s]' % (i_exp, *exp_conditions[i_exp][:3]))
         
         stim_left = exp_conditions[i_exp][3]
@@ -405,18 +403,23 @@ def run_exp(hmd, bino, results, play_sound=True, stopApp = False, scene_head_pos
         lasttime = blackscene(hmd, redlight, metronome, play_sound, timediff, lasttime)
         
         
-        
+        cnt=0
         while not stopCurr:
             i_exp,results,stopCurr = check_rerun(i_exp,results,exp_conditions,stopCurr) # ===============> check rerun
-            
+            cnt += 1
                 
             currenttime = hmd.getPredictedDisplayTime()
             state = hmd.getTrackingState(currenttime)
             headPose = state.headPose.thePose
             scene_head_pose = libovr.LibOVRPose(*headPose.posOri)
-            scene_head_pose.pos[0] *= exp_conditions[i_exp][1]
+            scene_head_pose.pos[0] *= exp_conditions[i_exp][1]#-------gain
             hmd.calcEyePoses(scene_head_pose)
-
+            
+            
+            if RECORD_LOG:
+                local_log.append([headPose.pos[0], headPose.pos[1], headPose.pos[2]])
+                
+            
 # =============================================================================
 #             if play_sound:
 #                 #print('Time diff {0:.3f}'.format(currenttime-lasttime))
@@ -426,7 +429,6 @@ def run_exp(hmd, bino, results, play_sound=True, stopApp = False, scene_head_pos
 #                     #print('Time diff {0:.5f}'.format(currenttime-lasttime))
 #                     lasttime = currenttime
 # =============================================================================
-                
             for i in ('left', 'right'):
                 if i == 'left' and not bino:
                     hmd.setBuffer(i)
@@ -489,6 +491,9 @@ def run_exp(hmd, bino, results, play_sound=True, stopApp = False, scene_head_pos
                 beep.stop(reset=True)
                 beep.play()
                 
+                if RECORD_LOG:
+                    all_logs.append([i_exp, local_log])
+                    
                 i_exp += 1
                 
             elif event.getKeys('x') or hmd.shouldQuit or hmd.getButtons('B', 'Touch', 'released')[0]:
@@ -500,41 +505,14 @@ def run_exp(hmd, bino, results, play_sound=True, stopApp = False, scene_head_pos
                 stopApp = True
                 stopCurr = True
                 
+                if RECORD_LOG:
+                    all_logs.append([i_exp, local_log])
+                    
             elif event.getKeys('c') or hmd.shouldRecenter or hmd.getButtons('X', 'Touch', 'released')[0]:
                 #if not updated:
                         
                     pos0,ori0 = headPose.posOri
                     #ori0[-1]=1
-# =============================================================================
-#                     print(ori0)
-#                     print(pos0)
-# =============================================================================
-                    #updated=libovr.LibOVRPose(pos=(0,pos0[1],0), ori=ori0)
-                    #updated=libovr.LibOVRPose(pos0, ori=ori0)
-                    
-                    #[ 0.14829019  0.7202662   0.11321209 -0.6681389 ]
-                    #[0.16838528 1.1444846  0.19657135]
-                    #updated=libovr.LibOVRPose([2.2 * 2, 0, pos0[2]], ori=ori0) # 90 deg
-                    
-                    #[ 0.15890583  0.5107054   0.10467983 -0.8384337 ]
-                    #[0.03280097 1.1014768  0.25552937]
-
-                    #updated=libovr.LibOVRPose([3.5, 0, -2], ori=ori0) # 135 deg
-                    
-                    #[ 0.03464585 -0.90199345 -0.06700671 -0.4251092 ]
-                    #[-0.26266024  1.2264059   0.4170599 ]
-                    #updated=libovr.LibOVRPose([-3.5, 0, 2], ori=ori0) # -45 deg
-                    
-                    
-                    #[ 0.06028234 -0.31693208 -0.01837163 -0.94635224]
-                    #[-0.17490031  1.1464405  -0.0377091 ]
-                    #updated=libovr.LibOVRPose([-3.5, 0, -2], ori=ori0) # -135 deg
-                    
-                    #[-0.00455408 -0.6985191   0.02659066 -0.7150827 ]
-                    #[-0.28214756  1.1770802   0.15016334]
-                    #updated=libovr.LibOVRPose([-3.5, 0, pos0[2]], ori=ori0) # -90 deg
-                    
-                    #updated=libovr.LibOVRPose([pos0[0], 0, 5], ori=ori0) # -90 deg
                     
                     updated=libovr.LibOVRPose([0,0,0], ori=ori0)
                     libovr.specifyTrackingOrigin(updated)
@@ -544,8 +522,11 @@ def run_exp(hmd, bino, results, play_sound=True, stopApp = False, scene_head_pos
                 
             
     if stopApp:# and play_sound:
-        metronome.stop(reset=True)        
-    return stopApp,results,metronome
+        metronome.stop(reset=True)
+    
+    print('Selected: %s' % selected_exp)
+    
+    return stopApp,results,metronome,all_logs
 
 def check_rerun(i_exp,results,exp_conditions,stopCurr):
     if event.getKeys('r'): # ===========> rerun last experiment                
@@ -559,6 +540,38 @@ def check_rerun(i_exp,results,exp_conditions,stopCurr):
         
     return i_exp,results,stopCurr
 
+#-------------------------
+def init_output(OUTPUT_PATH, outfile_base, play_sound=True, additional=True):
+    check_dir(OUTPUT_PATH)
+    if additional:
+        year, month, day, hour, minutes = map(int, time.strftime("%Y %m %d %H %M").split())
+        time_str = '-'.join([str(year), expand_data(str(month)), expand_data(str(day)), expand_data(str(hour)), expand_data(str(minutes))])
+    else:
+        time_str = ''
+    
+    time_str += '_' + ok_data[2] + '_' + ok_data[3] +  '_' + ok_data[4]+  '_' + ok_data[5]
+        
+    output_file = '_'.join([outfile_base, time_str, os.path.basename(sys.argv[0])]) + r'.csv'
+    csv_hdl = open(os.path.join(OUTPUT_PATH, output_file),'w')
+    
+    return csv_hdl
+
+def init_log(OUTPUT_PATH, outfile_base, idx, additional=True):
+    check_dir(OUTPUT_PATH)
+    if additional:
+        year, month, day, hour, minutes = map(int, time.strftime("%Y %m %d %H %M").split())
+        time_str = '-'.join([str(year), expand_data(str(month)), expand_data(str(day)), expand_data(str(hour)), expand_data(str(minutes))])
+    else:
+        time_str = ''
+    
+    time_str += '_' + ok_data[2] + '_' + ok_data[3] +  '_' + ok_data[4]+  '_' + ok_data[5]
+        
+    output_file = '_'.join([outfile_base, time_str, os.path.basename(sys.argv[0])]) + '_' + str(idx) + r'_log.csv'
+    csv_hdl = open(os.path.join(OUTPUT_PATH, output_file),'w')
+    
+    return csv_hdl
+
+
 def write2file(csvhdl,data):
     
     for ir in range(len(data)):
@@ -568,6 +581,17 @@ def write2file(csvhdl,data):
     csvhdl.close()
     
     return
+def log2file(data,OUTPUT_PATH, OUTPUT_FILE):
+    
+    print('Saving log to file')
+    for i_exp in range(len(data)):
+        csvhdl = init_log(OUTPUT_PATH, OUTPUT_FILE, i_exp)
+        i_exp,log_data=data[i_exp]
+        for ir in range(len(log_data)):
+            curr_data = log_data[ir]
+            csvhdl.write('{}, {}, {}\n'.format(*curr_data))
+        csvhdl.close()
+    return
 
 if __name__ == "__main__":
     
@@ -575,7 +599,8 @@ if __name__ == "__main__":
     #OUTPUT_PATH = r'.\output'
     #bino = False
     #n_repeat = 3
-        
+    TOTAL_EXP = 63
+    
     myDlg = gui.Dlg(title="Fold Parallax")
     myDlg.addText('Participant info')
     # 0
@@ -594,6 +619,9 @@ if __name__ == "__main__":
     # 6
     myDlg.addText('Data')
     myDlg.addField('Output directory:', './output')
+    # 7
+    myDlg.addField('# of log:', 0)
+    
     ok_data = myDlg.show()  # show dialog and wait for OK or Cancel
     
     if myDlg.OK:  # or if ok_data is not None
@@ -632,14 +660,18 @@ if __name__ == "__main__":
         if ok_data[5] in["constant"]:
             widths = ["wide","wide","wide"]
         else:
-            widths = ["narrow","middle","wide"]   
-        csv_hdl = init_output(OUTPUT_PATH, OUTPUT_FILE, ok_data)        
+            widths = ["narrow","middle","wide"]
+        log_max = ok_data[7]
+        csv_hdl = init_output(OUTPUT_PATH, OUTPUT_FILE, ok_data)
+        #log_hdl = init_log(OUTPUT_PATH, OUTPUT_FILE, ok_data)
 # =============================================================================
 #         for i_repeat in range(ok_data[1]):
 # =============================================================================               
-        exp_results = []
-        stopApp, exp_results, metronome = run_exp(hmd, bino, exp_results, play_sound, stopApp)
+        stopApp, exp_results, metronome, all_logs = run_exp(hmd, bino, log_max,
+                                                            TOTAL_EXP, play_sound, stopApp)
         write2file(csv_hdl, exp_results)
+        log2file(all_logs,OUTPUT_PATH, OUTPUT_FILE)
+        
         
         metronome.stop(reset=True)
         hmd.close()
