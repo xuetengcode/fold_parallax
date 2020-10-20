@@ -18,15 +18,16 @@
 
 ```conda install -c conda-forge pywinhook ```
 
-5 - Install Spyder:
+5 - Install Psychxr and Psychopy:
 
-```pip install spyder ```
+```pip install psychxr psychopy ```
 
-6 - Install Psychxr and Psychopy:
+6 - Install Spyder:
 
-```pip install psychxr psychopy```
+```conda install spyder```
 
-7 - Run Oculus App, draw the guardian as a 3 m-by-3 m square.
+7 - Run Oculus App, draw the guardian as a 16.5 * 16.5 ground marks (the little crossings in VR) square, to make it 3 m by 3 m in reality.
+	See Calibration_v14.pdf for graphical demonstrations.
 
 8 - Go back to Anaconda Prompt, with the psychxr enviroment activated, run Spyder by typing:
 
@@ -55,8 +56,8 @@
 
 12 - Calibrate the scene in VR if needed.
 	
-	Walk to the desired position then calibrate while you are looking at the existing ground bar
-	or while facing the desired orientation. See "calibration_v14.pdf" for graphic demonstrations.
+	Walk to the desired position then calibrate while facing the desired orientation
+	or while looking at the existing ground bar (to bring it closer). See "calibration_v14.pdf" for graphical demonstrations.
 	
 	When the scene is presented:
 	
