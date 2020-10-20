@@ -44,7 +44,7 @@ def red_activate(hmd, head_pos, eye, redlight, hit_left, hit_right, red_cnt_l=0,
 
 def red(hmd, head_pos, eye, redlight):
     light_shift = 0.9
-    parallax_thr = 0.05
+    parallax_thr = 0.15
     if head_pos.pos[0] > parallax_thr and eye == 'right':
         redlight.pos = (light_shift, 0.)
         redlight.draw(hmd)
@@ -620,7 +620,7 @@ if __name__ == "__main__":
     myDlg.addText('Data')
     myDlg.addField('Output directory:', './output')
     # 7
-    myDlg.addField('# of log:', 0)
+    myDlg.addField('# of log:', 63)
     
     ok_data = myDlg.show()  # show dialog and wait for OK or Cancel
     
