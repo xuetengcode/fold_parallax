@@ -10,7 +10,7 @@ f = 1.3
 ipd = 0.064
 gain = 2
 parallax = 1# [1,gain]
-shift = 1# [0,gain-1]
+shift = 1# [0,gain-parallax]
 p = np.arange(-0.15,0.15,0.001)
 eye = p*parallax+ipd/2
 eye_y = np.zeros(p.shape,dtype = int)
