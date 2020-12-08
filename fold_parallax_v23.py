@@ -3,6 +3,8 @@ crashes when starting a new round
 https://www.psychopy.org/general/units.html
 
 """
+import psychopy
+
 from psychopy import gui
 from psychopy import visual, event, core
 from psychopy.tools import arraytools, rifttools
@@ -16,187 +18,19 @@ from random import random, shuffle
 import math
 import os
 from psychopy.visual import LightSource
-import csv
-import time
-import sys
-import numpy as np
 
-
-# In[]
-def red_activate(hmd, head_pos, eye, redlight, hit_left, hit_right, red_cnt_l=0, red_cnt_r=0):
-    light_shift = 0.9
-    parallax_thr = 0.05
-    if head_pos.pos[0] > parallax_thr and eye == 'right':
-        redlight.pos = (light_shift, 0.)
-        redlight.draw(hmd)
-        if hit_left:
-            red_cnt_r += 1
-            hit_right = True
-            hit_left = False
-    elif head_pos.pos[0] < -parallax_thr and eye == 'left':
-        redlight.pos = (-light_shift, 0.)
-        redlight.draw(hmd)
-        if hit_right:
-            red_cnt_l += 1
-            hit_left = True
-            hit_right = False
-    return hmd, hit_left, hit_right, red_cnt_l, red_cnt_r
-
-def red(hmd, head_pos, eye, redlight):
-    light_shift = 0.9
-    parallax_thr = 0.15
-    if head_pos.pos[0] > parallax_thr and eye == 'right':
-        redlight.pos = (light_shift, 0.)
-        redlight.draw(hmd)
-    elif head_pos.pos[0] < -parallax_thr and eye == 'left':
-        redlight.pos = (-light_shift, 0.)
-        redlight.draw(hmd)
-            
-    return hmd
-
-def mtx2vao(xx, yy, zz):    
-    vertices, textureCoords, normals, faces = \
-        gltools.createMeshGridFromArrays(xx, yy, zz)
-    vertexVBO = gltools.createVBO(vertices)
-    texCoordVBO = gltools.createVBO(textureCoords)
-    normalsVBO = gltools.createVBO(normals)
-    indexBuffer = gltools.createVBO(
-        faces.flatten(),
-        target=GL.GL_ELEMENT_ARRAY_BUFFER,
-        dataType=GL.GL_UNSIGNED_INT)
-    vao = gltools.createVAO(
-        {GL.GL_VERTEX_ARRAY: vertexVBO,
-         GL.GL_TEXTURE_COORD_ARRAY: texCoordVBO,
-         GL.GL_NORMAL_ARRAY: normalsVBO},
-        indexBuffer=indexBuffer, legacy=True)    
-    return vao
-
-def render_plane(stim, hmd, voro, trianglePose):
-    sc = mathtools.scaleMatrix((1., 1., 1.0))
-    offset_mtx = mathtools.concatenate(
-        [sc, trianglePose.getModelMatrix()], dtype=np.float32)
-
-    offset_mtx = arraytools.array2pointer(offset_mtx)    
-    hmd = render2hmd(stim, hmd, voro, offset_mtx)    
-    return hmd
-
-def render2hmd(stim, hmd, voro, offset_mtx):    
-    hmd.draw3d = True
-    GL.glPushMatrix()
-    GL.glMultTransposeMatrixf(offset_mtx)
-    GL.glEnable(GL.GL_TEXTURE_2D)
-    GL.glActiveTexture(GL.GL_TEXTURE0)
-    GL.glBindTexture(GL.GL_TEXTURE_2D, voro.name)
-
-    gltools.drawVAO(stim, GL.GL_TRIANGLES)
-    GL.glBindTexture(GL.GL_TEXTURE_2D, 0)
-    GL.glDisable(GL.GL_TEXTURE_2D)
-    GL.glPopMatrix()
-    hmd.draw3d = False    
-    return hmd
-
-def create_aperture(y0=-0.35,y1=-2.8):
-    x_range = np.linspace(-3.0, 3.0, 2)
-    y_range = np.linspace(y0, y1, 2)
-    x, y = np.meshgrid(x_range, y_range)
-    z = np.tile(np.array([-0.8, -0.8]), (2, 1))
-
-    vao = mtx2vao(x, y, z)
-
-    return vao
-
-def create_floor():
-# =============================================================================
-#     z_range = np.linspace(-1.0, 3.0, 3)
-# =============================================================================
-    x_range = np.linspace(-2.0, 2.0, 3)
-    z_range = np.linspace(-1.0, 3.0, 3)
-    x, z = np.meshgrid(x_range, z_range)    
-    y = np.tile(np.array([0, 0, 0])-2.8, (3, 1))
-    vao = mtx2vao(x, y, z)
-    return vao
-
-def create_origin(y0=-2.6): 
-    x_range = np.linspace(-0.3, 0.3, 2)
-    #z = np.linspace(1.55, 1.7, 3)
-    z_range = np.linspace(-0.05, 0.05, 2)
-    x, z = np.meshgrid(x_range, z_range)
-    
-    y = np.tile(np.array([y0, y0]), (2, 1))
-    vao = mtx2vao(x, y, z)
-
-    return vao
-
-def create_half_fold(width, shape='left'):
-    
-    if shape in ['left']:
-        x_range = np.linspace(-1.0*width, 0.0, 2)
-        y_range = np.linspace(2, -2, 2)
-        x, y = np.meshgrid(x_range, y_range)
-        z = np.tile(np.array([-1.0*width, 0]), (2, 1))
-    else:
-        x_range = np.linspace(0.0, 1.0*width, 2)
-        y_range = np.linspace(2, -2, 2)
-        x, y = np.meshgrid(x_range, y_range)
-        z = np.tile(np.array([0, -1.0*width]), (2, 1))
-        
-    vao = mtx2vao(x, y, z)
-    return vao
-
-def create_central_line():    
-    x_range = np.linspace(-0.001, 0.001, 2)
-    y_range = np.linspace(2, -2, 2)
-    x, y = np.meshgrid(x_range, y_range)
-    z = np.tile(np.array([0, 0]), (2, 1))
-        
-    vao = mtx2vao(x, y, z)
-    return vao
-
-def positive_or_negative():
-    if random() < 0.5:
-        return 1
-    else:
-        return -1    
-
-def black(hmd, head_pos, eye, blacklight, fr=-1.25, bk=-1.15): # fr=-0.12, bk=0.05
-# =============================================================================
-#     print(head_pos.pos)
-#     print(bk)
-# =============================================================================
-    #print(head_pos.pos[2] < fr)
-    if head_pos.pos[2] > bk or head_pos.pos[2] < fr:
-        if eye == 'right':
-            blacklight.pos = (head_pos.pos[0], head_pos.pos[1])
-            blacklight.draw(hmd)
-        elif eye == 'left':
-            blacklight.pos = (head_pos.pos[0], head_pos.pos[1])
-            blacklight.draw(hmd)
-        dimming = True
-    else:
-        dimming = False
-    return hmd, blacklight, dimming
-
-
+from subfunctions.general import (
+    write2file, init_output, log2file
+    )
+from subfunctions.objects import (
+    create_half_fold, red_activate, positive_or_negative, 
+    render_plane, render2hmd, gen_offset_mtx,
+    create_floor, create_aperture, create_origin, create_central_line, create_shutter, creat_pole,
+    red, distance_restriction, dim_scene
+    )
+from subfunctions.scenes import fold_scene, pole_scene
 
 # In[]
-def gen_offset_mtx(input_ang, trianglePose):
-    rotation = mathtools.rotationMatrix(input_ang * 180 / math.pi, [0., 1., 0.]) # <<<<< rotation
-    offset_mtx = mathtools.concatenate(
-                    [rotation, trianglePose.getModelMatrix()], dtype=np.float32)
-    offset_mtx = arraytools.array2pointer(offset_mtx)
-    
-    return offset_mtx
-
-def check_dir(folder):
-    if not os.path.isdir('output'):
-        os.mkdir(folder)
-    return
-
-def expand_data(invar):
-    
-    if len(invar)==1:
-        invar = '0'+invar
-    return invar
 
 
 def blackscene(hmd, redlight, metronome, play_sound, timediff, lasttime):
@@ -246,6 +80,22 @@ def blackscene(hmd, redlight, metronome, play_sound, timediff, lasttime):
          if event.getKeys('r'): # get rid of multiple triggering
              continue
     return lasttime
+
+def gen_pole_pos(pole_close, pole_far):#, cond):
+    # generate randome position
+    rand = random()
+    rand_pos = pole_close - (pole_close - pole_far) * rand
+    #pole_far = floor_far # floor end
+    #pole_close = origin_line - 2
+    #rand_pole = pole_far + (pole_ed- pole_far) * random()
+# =============================================================================
+#     if cond in ['far']:
+#         rand_pos = pole_close - 2 * rand
+#     else:
+#         rand_pos = pole_close - (pole_close - pole_far) * rand
+# =============================================================================
+    
+    return rand_pos
 # In[]
 def run_exp(hmd, bino, SEL,
             TOTAL_EXP=63, play_sound=True, stopApp=False, scene_head_pose0=[0,0,0]):
@@ -253,7 +103,7 @@ def run_exp(hmd, bino, SEL,
     results = []
     IMG_PATH = r'.\images'
     img_path2 = r'.\images'
-    OFFSET = -1
+    OFFSET = 0
     all_logs = []
     
     all_exp = np.arange(TOTAL_EXP)
@@ -278,23 +128,36 @@ def run_exp(hmd, bino, SEL,
                 voro_distance = voros[i_d]
                 voro_width = widths[all_width.index(all_width_shuffle[i_d])]
                 voro_str = voro_distance + '_' + voro_width + ".png"
-                voro = gltools.createTexImage2dFromFile(r'{}'.format(os.path.join(IMG_PATH, voro_str)))            
+                voro = gltools.createTexImage2dFromFile(r'{}'.format(os.path.join(IMG_PATH, voro_str)))
                 left = create_half_fold(all_width_shuffle[i_d],'left')
                 right = create_half_fold(all_width_shuffle[i_d],'right')
                 
                 exp_conditions.append([all_distance[i_d], all_gain[i_g], all_width_shuffle[i_d], left, right, voro])
     shuffle(exp_conditions)
-
+    
+    texture_pole = gltools.createTexImage2dFromFile(
+        r'{}'.format(os.path.join(IMG_PATH, 'stripes_pole.jpg'))
+        )
+    
     #play_sound = True
     #depth_restriction = False
     timediff = 1
     #MAX_EXP = 30
     #-------- constant
     min_rotation = 0.005
+    min_move = 0.01
     #shuffle(all_gain)
     #shuffle(all_distance)
     
+    #---------------------- set world parameters
+    floor_far = -8.5
+    floor_close = 1.5
+    origin_line = 0
+    pole_con1_far = origin_line - 4#floor_far # floor end
+    pole_con1_close = origin_line - 2
     
+    pole_con2_close = origin_line - 0.5
+    pole_con2_far = origin_line - 0.8
     #--------------------------
     
     #hmd.ambientLight = [0.5, 0.5, 0.5]
@@ -303,19 +166,53 @@ def run_exp(hmd, bino, SEL,
     #hmd.lights = dirLight    
     redlight = visual.GratingStim(hmd, mask='gauss', size=1.0, tex=None, color='red', contrast=0.5, units='norm')
     redlight.setOpacity(1) # 0.5
-    blacklight = visual.GratingStim(hmd, mask='gauss', size=3.0, tex=None, color=(0,0,0), contrast=0.8, units='norm')
-    blacklight.setOpacity(0.8)
     
+    #blacklight = visual.GratingStim(hmd, size=3.0, tex=None, color=(0,0,0), contrast=0, units='norm')
+    #stim_shutter = visual.GratingStim(hmd, mask='gauss', size=3.0, tex=None, color=(0,0,0), contrast=0.8, units='norm')
+    shutter_dict = {
+        #         Postion,    direction axis, rotation (degree) 
+        'front': [(0, 5, -0.9), (1, 0, 0), 0.0],
+        'back': [(0, 5, 9.1), (1, 0, 0), -180.0],
+        'top': [(0, 10, 4.1), (1, 0, 0), 90.0],
+        'bottom': [(0, 0, 4.1), (1, 0, 0), -90.0],
+        'left': [(-5, 5, 4.1), (0, 1, 0), 90.0],
+        'right': [(5, 5, 4.1), (0, 1, 0), -90.0]
+        }
+    shutter_dict_pole = {
+        #         Postion,    direction axis, rotation (degree) 
+        'front': [(0, 5, -0.45), (1, 0, 0), 0.0],
+        'back': [(0, 5, 9.55), (1, 0, 0), -180.0],
+        'top': [(0, 10, 4.55), (1, 0, 0), 90.0],
+        'bottom': [(0, 0, 4.55), (1, 0, 0), -90.0],
+        'left': [(-5, 5, 4.55), (0, 1, 0), 90.0],
+        'right': [(5, 5, 4.55), (0, 1, 0), -90.0]
+        }
+    
+    stim_shutter = visual.PlaneStim(hmd, size=(10, 10), pos=shutter_dict['front'][0], 
+                                    color=(-1, -1, -1), opacity=0.5)
+    stim_shutter.thePose.setOriAxisAngle(shutter_dict['front'][1], shutter_dict['front'][2])
+    
+    
+    #stim_shutter.thePose.setOriAxisAngle((1, 0, 0), -90.0)
+    
+    #stim_shutter.opacity = 0.8
+# =============================================================================
+#     wallStim = visual.PlaneStim(hmd, size=(5, 5), pos=(0, 2.5, -4.0),  
+#                          useShaders=False, useMaterial=wallMaterial)
+# =============================================================================
 # =============================================================================
 #     stim_left = create_half_fold('left')
 #     stim_right = create_half_fold('right')
 # =============================================================================
-    stim_floor = create_floor()
+    stim_floor_big = create_floor(z_far=floor_far, z_close=floor_close)
+    stim_floor_small = create_floor(z_far=-1, z_close=5)
     stim_aperture_low = create_aperture()
     stim_aperture_high = create_aperture(10, 0.2)
-    stim_origin = create_origin()
+    stim_origin = create_origin(z0=origin_line)
     stim_line = create_central_line()
-
+    
+    #stim_pole = create_central_line(-0.05, 0.05)
+    stim_pole = creat_pole()
 # =============================================================================
 #     voro_big = gltools.createTexImage2dFromFile(r'{}'.format(os.path.join(IMG_PATH, 'voronoi_50.png')))
 #     voro_middle = gltools.createTexImage2dFromFile(
@@ -325,7 +222,7 @@ def run_exp(hmd, bino, SEL,
 # =============================================================================
     
     FloorTexture = gltools.createTexImage2dFromFile(
-        r'{}'.format(os.path.join(IMG_PATH, 'diffus.png')))
+        r'{}'.format(os.path.join(IMG_PATH, 'diffuse.png')))
     WhiteTexture = gltools.createTexImage2dFromFile(
         r'{}'.format(os.path.join(IMG_PATH, 'White.png')))
     BlackoutTexture = gltools.createTexImage2dFromFile(
@@ -348,6 +245,8 @@ def run_exp(hmd, bino, SEL,
                                    back_img, front_img))    
     skydark = visual.SceneSkybox(hmd, (right_img_dimmed, left_img_dimmed, up_img_dimmed, down_img_dimmed, 
                                    back_img_dimmed, front_img_dimmed))
+    
+    
 # =============================================================================
 #     metronome = Sound(r'.\audio\output.wav')
 # =============================================================================
@@ -363,12 +262,10 @@ def run_exp(hmd, bino, SEL,
     print('==> Starting a new round')        
     #while not nextRound and not stopApp and exp_id <= MAX_EXP:
     
-        
-
-        
     lasttime = hmd.getPredictedDisplayTime()
     i_exp = 0
     last_angle = 0
+    last_pole_pos = 0
     updated = False
     while i_exp < len(exp_conditions):
     #for i_exp in range(len(exp_conditions)):
@@ -383,10 +280,7 @@ def run_exp(hmd, bino, SEL,
         stim_left = exp_conditions[i_exp][3]
         stim_right = exp_conditions[i_exp][4]
         voro = exp_conditions[i_exp][5]
-        trianglePosition0 = (scene_head_pose0[0], hmd.eyeHeight, scene_head_pose0[-1] + OFFSET)
-        trianglePosition = (scene_head_pose0[0], hmd.eyeHeight, exp_conditions[i_exp][0] + scene_head_pose0[-1] + OFFSET)
-        trianglePose0 = rifttools.LibOVRPose(trianglePosition0)    
-        trianglePose = rifttools.LibOVRPose(trianglePosition)    
+        
         
         if stopApp:
             break
@@ -394,16 +288,35 @@ def run_exp(hmd, bino, SEL,
         #exp_id += 1
         rand_ang = math.pi * (15 + random()*25)/180 * positive_or_negative()
         
-        # thumbstick value
-        adju_ang = rand_ang
-        stopCurr = False
-        adjustment_cnt = 0
+        
+        # initialize object locaiton
+        trianglePosition0 = (
+            scene_head_pose0[0], hmd.eyeHeight, scene_head_pose0[-1] + OFFSET
+            )
+        trianglePosition = (
+            scene_head_pose0[0], hmd.eyeHeight, scene_head_pose0[-1] + OFFSET + exp_conditions[i_exp][0]
+            )
+        
+        trianglePose0 = rifttools.LibOVRPose(trianglePosition0)     # for origin and everything
+        trianglePose = rifttools.LibOVRPose(trianglePosition)       # for fold
         
         
         lasttime = blackscene(hmd, redlight, metronome, play_sound, timediff, lasttime)
         
+        # initialize thumbstick value
+        adju_ang = rand_ang
+        stopCurr = False
+        adjustment_cnt = 0
+        adju_pole = 0
+        adjustment_cnt_pole = 0
         
         cnt=0
+        first_scene = True
+        dim_flag = False
+        scene_cnt = 0
+        dim_cnt = 0
+        dark_cnt = 0 # second view: normal => dim => dark => pole 
+        dark_flag = False # second view: normal => dim => dark => pole 
         while not stopCurr:
             i_exp,results,stopCurr = check_rerun(i_exp,results,exp_conditions,stopCurr) # ===============> check rerun
             cnt += 1
@@ -412,94 +325,125 @@ def run_exp(hmd, bino, SEL,
             state = hmd.getTrackingState(currenttime)
             headPose = state.headPose.thePose
             scene_head_pose = libovr.LibOVRPose(*headPose.posOri)
-            scene_head_pose.pos[0] *= exp_conditions[i_exp][1]#-------gain
+            if first_scene: # only has gain in the first scene
+                scene_head_pose.pos[0] *= exp_conditions[i_exp][1]#-------gain
             hmd.calcEyePoses(scene_head_pose)
             
             
             if RECORD_LOG:
                 local_log.append([headPose.pos[0], headPose.pos[1], headPose.pos[2]])
-                
             
-# =============================================================================
-#             if play_sound:
-#                 #print('Time diff {0:.3f}'.format(currenttime-lasttime))
-#                 if abs(currenttime - lasttime - timediff) < 0.01 and currenttime-lasttime > 0.1:
-#                     metronome.stop(reset=True)
-#                     metronome.play()
-#                     #print('Time diff {0:.5f}'.format(currenttime-lasttime))
-#                     lasttime = currenttime
-# =============================================================================
-            for i in ('left', 'right'):
-                if i == 'left' and not bino:
-                    hmd.setBuffer(i)
-                    hmd.setRiftView()
-                    
-                    #----------------------------------
-                    hmd.setDefaultView()
-                    hmd = red(hmd, headPose, i, redlight)
-                    
-                    GL.glColor3f(1.0, 1.0, 1.0)  # <<< reset the color manually
-                else:
-                        
-                    hmd.setBuffer(i)
-                    hmd, blacklight, dimming = black(hmd, headPose, i, blacklight)
-                    hmd.setRiftView()
-                    #--------------- origin
-                    hmd = render_plane(stim_origin, hmd, WhiteTexture, trianglePose0)
-                    #--------------- aperture
-                    hmd = render_plane(stim_aperture_low, hmd, BlackoutTexture, trianglePose0)
-                    hmd = render_plane(stim_aperture_high, hmd, BlackoutTexture, trianglePose0)
-                    #--------------- floor
-                    hmd = render_plane(stim_floor, hmd, FloorTexture, trianglePose0)
-                    #-------------- the left half prism
-                    offset_mtx = gen_offset_mtx(adju_ang, trianglePose)
-                    hmd = render2hmd(stim_left, hmd, voro, offset_mtx)
-                    #-------------- the right half prism
-                    offset_mtx = gen_offset_mtx(-adju_ang, trianglePose)
-                    hmd = render2hmd(stim_right, hmd, voro, offset_mtx)
-                    #--------- central line
-                    hmd = render_plane(stim_line, hmd, BlackoutTexture, trianglePose)
-                    if dimming:
-                        skydark.draw()
+            # first scene
+            if first_scene:
+                
+                hmd, first_scene, dim_cnt, dim_flag, dark_cnt, dark_flag = fold_scene(
+                    hmd, bino, headPose, redlight, stim_shutter,
+                    adju_ang, 
+                    WhiteTexture, BlackoutTexture, FloorTexture, trianglePose0, trianglePose,
+                    stim_origin, stim_aperture_low, stim_aperture_high, 
+                    stim_floor_small, stim_left, stim_right, stim_line,
+                    skydark, sky, voro,
+                    dim_flag, dim_cnt, first_scene,
+                    dark_cnt, dark_flag,
+                    shutter_dict
+                    )
+                rawVal = hmd.getThumbstickValues(r'Touch', deadzone=True)[1]
+                
+                if not first_scene:
+                    rand = random()
+                    if rand>0.5:
+                        rand_pole = gen_pole_pos(pole_con1_close, pole_con1_far)#, 'far')
                     else:
-                        sky.draw()
-                    #----------------------------------
-                    hmd.setDefaultView()
-                    hmd = red(hmd, headPose, i, redlight)
+                        rand_pole = gen_pole_pos(pole_con2_close, pole_con2_far)#, 'close')
                     
-                    GL.glColor3f(1.0, 1.0, 1.0)  # <<< reset the color manually
                     
-            hmd.flip()
-            rawVal = hmd.getThumbstickValues(r'Touch', deadzone=True)[1]
-            if rawVal[0] > 0.25:
-                adju_ang += min_rotation
-                adjustment_cnt += 1
+                if rawVal[0] > 0.25:
+                    adju_ang += min_rotation
+                    adjustment_cnt += 1
+                    
+                elif rawVal[0] < -0.25:
+                    adju_ang -= min_rotation
+                    adjustment_cnt -= 1
+            else:
+                dim_cnt = 0
+                # second scene
                 
-            elif rawVal[0] < -0.25:
-                adju_ang -= min_rotation
-                adjustment_cnt -= 1
-            
-            
+                #pole_shift = exp_conditions[i_exp][0] + adju_pole
+# =============================================================================
+#                 print('rand %.3f, all %.3f' % (rand_pole, 
+#                                                scene_head_pose0[-1] + OFFSET + rand_pole + adju_pole))
+# =============================================================================
+                #trianglePosition0 = (
+                #    scene_head_pose0[0], hmd.eyeHeight, 
+                #    scene_head_pose0[-1] + OFFSET
+                #    )
+                trianglePosition_pole = (
+                    scene_head_pose0[0], hmd.eyeHeight, 
+                    scene_head_pose0[-1] + OFFSET + rand_pole + adju_pole
+                    )
+                trianglePose_pole = rifttools.LibOVRPose(trianglePosition_pole)       # for pole
+                
+                hmd = pole_scene(
+                    hmd, headPose, redlight,
+                    stim_origin, stim_floor_big, stim_pole, stim_shutter,
+                    WhiteTexture, FloorTexture, texture_pole, 
+                    trianglePose_pole, trianglePose0,
+                    sky, dim_flag, shutter_dict_pole
+                    )
+                        
+                hmd.flip()
+                rawVal = hmd.getThumbstickValues(r'Touch', deadzone=True)[1]
+                if rawVal[1] > 0.25:
+                    if scene_head_pose0[-1] + OFFSET + rand_pole + adju_pole > -4:
+                        adju_pole -= min_move
+                        adjustment_cnt_pole += 1
+                    
+                elif rawVal[1] < -0.25:
+                    if scene_head_pose0[-1] + OFFSET + rand_pole + adju_pole < -0.5:
+                        adju_pole += min_move
+                        adjustment_cnt_pole -= 1
+                
+                last_pole_pos = OFFSET + rand_pole + adju_pole
+                
+            # =============== event handling ==================
             if event.getKeys('q') or hmd.shouldQuit or hmd.getButtons('A', 'Touch', 'released')[0]:
-                results.append([adju_ang, abs(exp_conditions[i_exp][0]), rand_ang, min_rotation,
-                    adjustment_cnt, exp_conditions[i_exp][1], exp_conditions[i_exp][2]
-                    ])
-                
-                last_angle = rand_ang
-                stopCurr = True
-                
-                beep.stop(reset=True)
-                beep.play()
-                
-                if RECORD_LOG:
-                    all_logs.append([i_exp, local_log])
+                print('scene cnt %i' % scene_cnt)
+                if scene_cnt % 2 == 0:
+                    #first_scene = False
+                    dim_flag = True
+                    dim_cnt = 0
+                    beep.stop(reset=True)
+                    beep.play()
+                else:
+                    first_scene = True
                     
-                i_exp += 1
+                    results.append([
+                        adju_ang, abs(exp_conditions[i_exp][0]), 
+                        rand_ang, min_rotation,
+                        adjustment_cnt, exp_conditions[i_exp][1], exp_conditions[i_exp][2],
+                        adjustment_cnt_pole, min_move, last_pole_pos
+                        ])
+                    
+                    last_angle = rand_ang
+                    stopCurr = True
+                    
+                    beep.stop(reset=True)
+                    beep.play()
+                    
+                    if RECORD_LOG:
+                        all_logs.append([i_exp, local_log])
+                
+                    i_exp += 1
+                
+                scene_cnt += 1
                 
             elif event.getKeys('x') or hmd.shouldQuit or hmd.getButtons('B', 'Touch', 'released')[0]:
                 print(' ==> program stoped or finished')
-                results.append([adju_ang, abs(exp_conditions[i_exp][0]), rand_ang, min_rotation,
-                    adjustment_cnt, exp_conditions[i_exp][1], exp_conditions[i_exp][2]
+                results.append([
+                    adju_ang, abs(exp_conditions[i_exp][0]), 
+                    rand_ang, min_rotation,
+                    adjustment_cnt, exp_conditions[i_exp][1], exp_conditions[i_exp][2],
+                    adjustment_cnt_pole, min_move, last_pole_pos
                     ])
                 
                 stopApp = True
@@ -541,57 +485,7 @@ def check_rerun(i_exp,results,exp_conditions,stopCurr):
     return i_exp,results,stopCurr
 
 #-------------------------
-def init_output(OUTPUT_PATH, outfile_base, play_sound=True, additional=True):
-    check_dir(OUTPUT_PATH)
-    if additional:
-        year, month, day, hour, minutes = map(int, time.strftime("%Y %m %d %H %M").split())
-        time_str = '-'.join([str(year), expand_data(str(month)), expand_data(str(day)), expand_data(str(hour)), expand_data(str(minutes))])
-    else:
-        time_str = ''
-    
-    time_str += '_' + ok_data[2] + '_' + ok_data[3] +  '_' + ok_data[4]+  '_' + ok_data[5]
-        
-    output_file = '_'.join([outfile_base, time_str, os.path.basename(sys.argv[0])]) + r'.csv'
-    csv_hdl = open(os.path.join(OUTPUT_PATH, output_file),'w')
-    
-    return csv_hdl
 
-def init_log(OUTPUT_PATH, outfile_base, idx, additional=True):
-    check_dir(OUTPUT_PATH)
-    if additional:
-        year, month, day, hour, minutes = map(int, time.strftime("%Y %m %d %H %M").split())
-        time_str = '-'.join([str(year), expand_data(str(month)), expand_data(str(day)), expand_data(str(hour)), expand_data(str(minutes))])
-    else:
-        time_str = ''
-    
-    time_str += '_' + ok_data[2] + '_' + ok_data[3] +  '_' + ok_data[4]+  '_' + ok_data[5]
-        
-    output_file = '_'.join([outfile_base, time_str, os.path.basename(sys.argv[0])]) + '_' + str(idx) + r'_log.csv'
-    csv_hdl = open(os.path.join(OUTPUT_PATH, output_file),'w')
-    
-    return csv_hdl
-
-
-def write2file(csvhdl,data):
-    
-    for ir in range(len(data)):
-        curr_data = data[ir]
-        csvhdl.write('{}, {}, {}, {}, {}, {}, {}\n'.format(*curr_data))
-    
-    csvhdl.close()
-    
-    return
-def log2file(data,OUTPUT_PATH, OUTPUT_FILE):
-    
-    print('Saving log to file')
-    for i_exp in range(len(data)):
-        csvhdl = init_log(OUTPUT_PATH, OUTPUT_FILE, i_exp)
-        i_exp,log_data=data[i_exp]
-        for ir in range(len(log_data)):
-            curr_data = log_data[ir]
-            csvhdl.write('{}, {}, {}\n'.format(*curr_data))
-        csvhdl.close()
-    return
 
 if __name__ == "__main__":
     
@@ -670,7 +564,7 @@ if __name__ == "__main__":
         stopApp, exp_results, metronome, all_logs = run_exp(hmd, bino, log_max,
                                                             TOTAL_EXP, play_sound, stopApp)
         write2file(csv_hdl, exp_results)
-        log2file(all_logs,OUTPUT_PATH, OUTPUT_FILE)
+        log2file(all_logs,OUTPUT_PATH, OUTPUT_FILE, ok_data)
         
         
         metronome.stop(reset=True)
