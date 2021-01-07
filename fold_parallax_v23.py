@@ -4,7 +4,7 @@ https://www.psychopy.org/general/units.html
 
 """
 import psychopy
-
+import time
 from psychopy import gui
 from psychopy import visual, event, core
 from psychopy.tools import arraytools, rifttools
@@ -20,7 +20,7 @@ import os
 from psychopy.visual import LightSource
 
 from subfunctions.general import (
-    write2file, init_output, log2file
+    write2file, init_output, log2file, expand_data
     )
 from subfunctions.objects import (
     create_half_fold, red_activate, positive_or_negative, 
@@ -556,15 +556,19 @@ if __name__ == "__main__":
         else:
             widths = ["narrow","middle","wide"]
         log_max = ok_data[7]
-        csv_hdl = init_output(OUTPUT_PATH, OUTPUT_FILE, ok_data)
+        
         #log_hdl = init_log(OUTPUT_PATH, OUTPUT_FILE, ok_data)
 # =============================================================================
 #         for i_repeat in range(ok_data[1]):
 # =============================================================================               
         stopApp, exp_results, metronome, all_logs = run_exp(hmd, bino, log_max,
                                                             TOTAL_EXP, play_sound, stopApp)
+        
+        year, month, day, hour, minutes = map(int, time.strftime("%Y %m %d %H %M").split())
+        time_str = '-'.join([str(year), expand_data(str(month)), expand_data(str(day)), expand_data(str(hour)), expand_data(str(minutes))])
+        csv_hdl = init_output(time_str, OUTPUT_PATH, OUTPUT_FILE, ok_data)
         write2file(csv_hdl, exp_results)
-        log2file(all_logs,OUTPUT_PATH, OUTPUT_FILE, ok_data)
+        log2file(time_str, all_logs,OUTPUT_PATH, OUTPUT_FILE, ok_data)
         
         
         metronome.stop(reset=True)
