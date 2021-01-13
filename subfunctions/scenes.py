@@ -14,6 +14,75 @@ from subfunctions.objects import (
     )
 
 # In[]
+def pole_scene_dev(
+        hmd, headPose, redlight,
+        stim_origin, stim_floor_big, stim_pole, stim_shutter,
+        WhiteTexture, FloorTexture, texture_pole, 
+        trianglePose_pole, trianglePose0,
+        sky, dim_flag, plane_dict,
+        dim_cnt, dark_cnt, dark_flag
+        ):
+    
+    for i in ('left', 'right'):
+        hmd.setBuffer(i)
+        if dim_flag:
+            dim_ed = 0.7
+            total_time = 32*15
+            stim_shutter.opacity = dim_cnt/(total_time)
+            #blacklight.setOpacity( 1.0 )
+            
+            #hmd, stim_shutter = dim_scene(hmd, headPose, i, stim_shutter)
+            
+            if dim_cnt > total_time*dim_ed:
+                # change back
+                stim_shutter.opacity = 0.5
+                dark_flag = True
+                dim_flag = False
+                
+            # if dim_cnt > total_time*dim_ed/2:
+            #     dimming = True
+            # else:
+            #     dimming = False
+            
+            dim_cnt += 1
+        elif dark_flag:
+            dark_cnt += 1
+        else:
+            dimming = distance_restriction(headPose)
+        
+        if not dark_flag:
+            hmd.setRiftView()
+            #--------------- origin
+            hmd = render_plane(stim_origin, hmd, WhiteTexture, trianglePose0)
+            #--------------- floor
+            hmd = render_plane(stim_floor_big, hmd, FloorTexture, trianglePose0)
+            #--------- central pole
+            hmd = render_plane(stim_pole, hmd, texture_pole, trianglePose_pole)
+            sky.draw()
+            
+            if dimming or dim_flag:
+                if len(plane_dict) > 0:
+                    # plane_dict = {
+                    #     'front': [(0, 5, -0.9), (1, 0, 0), 0.0],
+                    #     'back': [(0, 0, 0), (1, 0, 0), -180.0],
+                    #     'top': [(0, 2, 0), (1, 0, 0), 90.0],
+                    #     'left': [(-3, 0, 0), (0, 1, 0), 90.0],
+                    #     'right': [(3, 0, 0), (0, 1, 0), -90.0]
+                    #     }
+                    all_settings = list(plane_dict.keys())
+                    for setting in all_settings:
+                        stim_shutter.pos = plane_dict[setting][0]
+                        stim_shutter.thePose.setOriAxisAngle(plane_dict[setting][1], 
+                                                             plane_dict[setting][2])
+                        stim_shutter.draw()
+            #----------------------------------
+            hmd.setDefaultView()
+            hmd = red(hmd, headPose, i, redlight)
+            
+            GL.glColor3f(1.0, 1.0, 1.0)  # <<< reset the color manually
+    
+    return hmd
+
 def pole_scene(
         hmd, headPose, redlight,
         stim_origin, stim_floor_big, stim_pole, stim_shutter,

@@ -33,7 +33,7 @@ from subfunctions.scenes import fold_scene, pole_scene
 # In[]
 
 
-def blackscene(hmd, redlight, metronome, play_sound, timediff, lasttime):
+def blackscene(hmd, redlight, metronome, play_sound, timediff, lasttime, auto=False):
     
     red_cnt_l = 0
     red_cnt_r = 0
@@ -41,6 +41,8 @@ def blackscene(hmd, redlight, metronome, play_sound, timediff, lasttime):
     hit_left = True
     hit_right = False
     activate_cnt = 1
+    total_time = 32*3 #===================================== change here
+    auto_cnt = 0
 # =============================================================================
 #     if play_sound:
 #              metronome.stop(reset=True)
@@ -68,13 +70,18 @@ def blackscene(hmd, redlight, metronome, play_sound, timediff, lasttime):
              hmd, hit_left, hit_right, red_cnt_l, red_cnt_r = red_activate(hmd, headPose, eye, redlight, hit_left, hit_right, red_cnt_l, red_cnt_r)    
          hmd.flip()
          
+         if auto:
+             if auto_cnt > total_time:
+                 break
+             auto_cnt += 1
+             
          if red_cnt_l >= activate_cnt and red_cnt_r >= activate_cnt and play_sound:
              break
          
          if event.getKeys('n') or hmd.shouldQuit:
              break
          
-         if not play_sound and hmd.getButtons('A', 'Touch', 'falling')[0]:
+         if not play_sound and hmd.getButtons('A', 'Touch', 'falling')[0] and not auto:
          #if hmd.getButtons('A', 'Touch', 'falling')[0]:
              break
          if event.getKeys('r'): # get rid of multiple triggering
@@ -97,7 +104,7 @@ def gen_pole_pos(pole_close, pole_far):#, cond):
     
     return rand_pos
 # In[]
-def run_exp(hmd, bino, SEL,
+def run_exp(metronome, hmd, bino, SEL,
             TOTAL_EXP=63, play_sound=True, stopApp=False, scene_head_pose0=[0,0,0]):
     
     results = []
@@ -113,7 +120,7 @@ def run_exp(hmd, bino, SEL,
     if ok_data[3] in ["motion"]:
         all_gain = [1/2, 2/3, 4/5, 1, 5/4, 3/2, 2]
     else:
-        all_gain = [1, 1, 1, 1, 1, 1, 1]
+        all_gain = [1]
     if ok_data[5] in ["constant"]:
         all_width_shuffle = [1., 1., 1.]
     else:
@@ -250,7 +257,7 @@ def run_exp(hmd, bino, SEL,
 # =============================================================================
 #     metronome = Sound(r'.\audio\output.wav')
 # =============================================================================
-    metronome = Sound(r'.\audio\metronome.wav')
+    
     if play_sound:
         metronome.stop(reset=True)
         metronome.play()
@@ -267,6 +274,7 @@ def run_exp(hmd, bino, SEL,
     last_angle = 0
     last_pole_pos = 0
     updated = False
+    skip_black = False
     while i_exp < len(exp_conditions):
     #for i_exp in range(len(exp_conditions)):
         local_log = []
@@ -275,7 +283,7 @@ def run_exp(hmd, bino, SEL,
         else:
             RECORD_LOG = False
             
-        print('[debug info] %s: [distance, gain, width] = [%s, %s, %s]' % (i_exp, *exp_conditions[i_exp][:3]))
+        print('[debug info] Exp %s: [distance, gain, width] = [%s, %s, %s]' % (i_exp, *exp_conditions[i_exp][:3]))
         
         stim_left = exp_conditions[i_exp][3]
         stim_right = exp_conditions[i_exp][4]
@@ -301,7 +309,6 @@ def run_exp(hmd, bino, SEL,
         trianglePose = rifttools.LibOVRPose(trianglePosition)       # for fold
         
         
-        lasttime = blackscene(hmd, redlight, metronome, play_sound, timediff, lasttime)
         
         # initialize thumbstick value
         adju_ang = rand_ang
@@ -311,13 +318,23 @@ def run_exp(hmd, bino, SEL,
         adjustment_cnt_pole = 0
         
         cnt=0
+        zero_scene = False
         first_scene = True
         dim_flag = False
         scene_cnt = 0
         dim_cnt = 0
         dark_cnt = 0 # second view: normal => dim => dark => pole 
         dark_flag = False # second view: normal => dim => dark => pole 
+        
+        if not skip_black or play_sound:
+            lasttime = blackscene(hmd, redlight, metronome, play_sound, timediff, lasttime)
+            
         while not stopCurr:
+            if zero_scene and not play_sound:
+                lasttime = blackscene(hmd, redlight, metronome, play_sound, timediff, lasttime, True)
+                stopCurr = True
+                break
+            
             i_exp,results,stopCurr = check_rerun(i_exp,results,exp_conditions,stopCurr) # ===============> check rerun
             cnt += 1
                 
@@ -327,15 +344,18 @@ def run_exp(hmd, bino, SEL,
             scene_head_pose = libovr.LibOVRPose(*headPose.posOri)
             if first_scene: # only has gain in the first scene
                 scene_head_pose.pos[0] *= exp_conditions[i_exp][1]#-------gain
+                
             hmd.calcEyePoses(scene_head_pose)
             
             
             if RECORD_LOG:
                 local_log.append([headPose.pos[0], headPose.pos[1], headPose.pos[2]])
             
+            
             # first scene
-            if first_scene:
+            if first_scene and not zero_scene:
                 
+        
                 hmd, first_scene, dim_cnt, dim_flag, dark_cnt, dark_flag = fold_scene(
                     hmd, bino, headPose, redlight, stim_shutter,
                     adju_ang, 
@@ -377,6 +397,8 @@ def run_exp(hmd, bino, SEL,
                 #    scene_head_pose0[0], hmd.eyeHeight, 
                 #    scene_head_pose0[-1] + OFFSET
                 #    )
+                metronome.stop(reset=True)
+        
                 trianglePosition_pole = (
                     scene_head_pose0[0], hmd.eyeHeight, 
                     scene_head_pose0[-1] + OFFSET + rand_pole + adju_pole
@@ -407,6 +429,7 @@ def run_exp(hmd, bino, SEL,
                 
             # =============== event handling ==================
             if event.getKeys('q') or hmd.shouldQuit or hmd.getButtons('A', 'Touch', 'released')[0]:
+                skip_black = True
                 print('scene cnt %i' % scene_cnt)
                 if scene_cnt % 2 == 0:
                     #first_scene = False
@@ -415,8 +438,14 @@ def run_exp(hmd, bino, SEL,
                     beep.stop(reset=True)
                     beep.play()
                 else:
+                    zero_scene = True
                     first_scene = True
+                    #
                     
+                    if play_sound:
+                        stopCurr = True
+                        metronome.stop(reset=True)
+                        metronome.play()
                     results.append([
                         adju_ang, abs(exp_conditions[i_exp][0]), 
                         rand_ang, min_rotation,
@@ -425,7 +454,6 @@ def run_exp(hmd, bino, SEL,
                         ])
                     
                     last_angle = rand_ang
-                    stopCurr = True
                     
                     beep.stop(reset=True)
                     beep.play()
@@ -560,8 +588,9 @@ if __name__ == "__main__":
         #log_hdl = init_log(OUTPUT_PATH, OUTPUT_FILE, ok_data)
 # =============================================================================
 #         for i_repeat in range(ok_data[1]):
-# =============================================================================               
-        stopApp, exp_results, metronome, all_logs = run_exp(hmd, bino, log_max,
+# =============================================================================
+        metronome = Sound(r'.\audio\metronome.wav')
+        stopApp, exp_results, metronome, all_logs = run_exp(metronome, hmd, bino, log_max,
                                                             TOTAL_EXP, play_sound, stopApp)
         
         year, month, day, hour, minutes = map(int, time.strftime("%Y %m %d %H %M").split())
