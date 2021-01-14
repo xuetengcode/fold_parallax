@@ -33,7 +33,7 @@ from subfunctions.scenes import fold_scene, pole_scene
 # In[]
 
 
-def blackscene(hmd, redlight, metronome, play_sound, timediff, lasttime, auto=False):
+def blackscene(beep, hmd, redlight, metronome, play_sound, timediff, lasttime, auto=False):
     
     red_cnt_l = 0
     red_cnt_r = 0
@@ -82,10 +82,14 @@ def blackscene(hmd, redlight, metronome, play_sound, timediff, lasttime, auto=Fa
              break
          
          if not play_sound and hmd.getButtons('A', 'Touch', 'falling')[0] and not auto:
+             beep.stop(reset=True)
+             beep.play()
          #if hmd.getButtons('A', 'Touch', 'falling')[0]:
              break
          if event.getKeys('r'): # get rid of multiple triggering
              continue
+    
+    
     return lasttime
 
 def gen_pole_pos(pole_close, pole_far):#, cond):
@@ -327,11 +331,11 @@ def run_exp(metronome, hmd, bino, SEL,
         dark_flag = False # second view: normal => dim => dark => pole 
         
         if not skip_black or play_sound:
-            lasttime = blackscene(hmd, redlight, metronome, play_sound, timediff, lasttime)
+            lasttime = blackscene(beep, hmd, redlight, metronome, play_sound, timediff, lasttime)
             
         while not stopCurr:
             if zero_scene and not play_sound:
-                lasttime = blackscene(hmd, redlight, metronome, play_sound, timediff, lasttime, True)
+                lasttime = blackscene(beep, hmd, redlight, metronome, play_sound, timediff, lasttime, True)
                 stopCurr = True
                 break
             
