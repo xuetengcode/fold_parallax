@@ -126,24 +126,22 @@ def run_exp(metronome, hmd, bino, SEL,
     else:
         all_gain = [1]
     if ok_data[5] in ["constant"]:
-        all_width_shuffle = [1., 1., 1.]
+        all_width = [1., 1., 1.]
     else:
-        all_width_shuffle = [1., 1.125, 1.25]
+        all_width = [1., 1.125, 1.25]
     all_distance = [-1.3, -1.4, -1.5]
-    all_width = [1, 1.125, 1.25]
     exp_conditions = []
-    for i_repeat in range(ok_data[1]):
-        for i_d in range (len(all_distance)):
-            shuffle(all_width_shuffle)
-            for i_g in range(len(all_gain)):
+    for i_w in range(ok_data[1]):
+        for i_g in range(len(all_gain)):
+            #shuffle(all_width_shuffle)
+            for i_d in range (len(all_distance)):
                 voro_distance = voros[i_d]
-                voro_width = widths[all_width.index(all_width_shuffle[i_d])]
+                voro_width = widths[i_w]
                 voro_str = voro_distance + '_' + voro_width + ".png"
                 voro = gltools.createTexImage2dFromFile(r'{}'.format(os.path.join(IMG_PATH, voro_str)))
-                left = create_half_fold(all_width_shuffle[i_d],'left')
-                right = create_half_fold(all_width_shuffle[i_d],'right')
-                
-                exp_conditions.append([all_distance[i_d], all_gain[i_g], all_width_shuffle[i_d], left, right, voro])
+                left = create_half_fold(all_width[i_w],'left')
+                right = create_half_fold(all_width[i_w],'right')                
+                exp_conditions.append([all_distance[i_d], all_gain[i_g], all_width[i_w], left, right, voro])
     shuffle(exp_conditions)
     
     texture_pole = gltools.createTexImage2dFromFile(
