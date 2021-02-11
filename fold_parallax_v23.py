@@ -133,7 +133,6 @@ def run_exp(metronome, hmd, bino, SEL,
     exp_conditions = []
     for i_w in range(ok_data[1]):
         for i_g in range(len(all_gain)):
-            #shuffle(all_width_shuffle)
             for i_d in range (len(all_distance)):
                 voro_distance = voros[i_d]
                 voro_width = widths[i_w]
