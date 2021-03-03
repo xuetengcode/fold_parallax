@@ -2,7 +2,8 @@
 
 ## Dependencies & Instructions
 
-0 - Download everything into your computer.
+
+0 - If everything is already installed, follow the items in "Instructions.pdf" every time you run the experiment.
 
 1 - Go to this website to download Anaconda installer for python 3.7 then install it: https://www.anaconda.com/products/individual#windows
 
@@ -33,7 +34,7 @@
 
 ```Spyder```
 
-9 - In Spyder, open the "fold_parallax_v_number.py". F5 to run the script, a dialogue will pop up:
+9 - Download everything into your computer. In Spyder, open the "fold_parallax_v_number.py". F5 to run the script, a dialogue will pop up:
 
 	- Put your name or initial in Participant Info;
 
