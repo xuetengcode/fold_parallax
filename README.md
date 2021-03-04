@@ -21,7 +21,7 @@
 
 5 - Install Psychxr and Psychopy:
 
-```pip install psychxr psychopy ```
+```pip install psychxr==0.2.2 psychopy==2020.2 ```
 
 6 - Install Spyder:
 
