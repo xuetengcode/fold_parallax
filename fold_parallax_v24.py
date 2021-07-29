@@ -109,7 +109,7 @@ def gen_pole_pos(pole_close, pole_far):#, cond):
     return rand_pos
 # In[]
 def run_exp(metronome, hmd, bino, SEL,
-            TOTAL_EXP=63, play_sound=True, stopApp=False, scene_head_pose0=[0,0,0]):
+            TOTAL_EXP=45, play_sound=True, stopApp=False, scene_head_pose0=[0,0,0]):
     
     results = []
     IMG_PATH = r'.\images'
@@ -122,14 +122,14 @@ def run_exp(metronome, hmd, bino, SEL,
     selected_exp = all_exp[:SEL]
         
     if ok_data[3] in ["motion"]:
-        all_gain = [1/2, 2/3, 4/5, 1, 5/4, 3/2, 2]
+        all_gain = [1/2, 2/3, 1, 3/2, 2]
     else:
         all_gain = [1]
     if ok_data[5] in ["constant"]:
         all_width = [1., 1., 1.]
     else:
         all_width = [1., 1.125, 1.25]
-    all_distance = [-1.3, -1.4, -1.5]
+    all_distance = [-1.5, -3, -6]
     exp_conditions = []
     for i_w in range(ok_data[1]):
         for i_g in range(len(all_gain)):
@@ -138,8 +138,8 @@ def run_exp(metronome, hmd, bino, SEL,
                 voro_width = widths[i_w]
                 voro_str = voro_distance + '_' + voro_width + ".png"
                 voro = gltools.createTexImage2dFromFile(r'{}'.format(os.path.join(IMG_PATH, voro_str)))
-                left = create_half_fold(all_width[i_w],'left')
-                right = create_half_fold(all_width[i_w],'right')                
+                left = create_half_fold(all_width[i_w]*abs(all_distance[i_d])/1.5,'left')
+                right = create_half_fold(all_width[i_w]*abs(all_distance[i_d])/1.5,'right')                
                 exp_conditions.append([all_distance[i_d], all_gain[i_g], all_width[i_w], left, right, voro])
     shuffle(exp_conditions)
     
@@ -161,8 +161,8 @@ def run_exp(metronome, hmd, bino, SEL,
     floor_far = -8.5
     floor_close = 1.5
     origin_line = 0
-    pole_con1_far = origin_line - 4#floor_far # floor end
-    pole_con1_close = origin_line - 2
+    pole_con1_far = origin_line - 7.5#floor_far # floor end
+    pole_con1_close = origin_line - 7
     
     pole_con2_close = origin_line - 0.5
     pole_con2_far = origin_line - 0.8
@@ -215,7 +215,9 @@ def run_exp(metronome, hmd, bino, SEL,
     stim_floor_big = create_floor(z_far=floor_far, z_close=floor_close)
     stim_floor_small = create_floor(z_far=-1, z_close=5)
     stim_aperture_low = create_aperture()
-    stim_aperture_high = create_aperture(10, 0.2)
+    stim_aperture_high = create_aperture(y0=10, y1=0.3)
+    stim_aperture_left = create_aperture(x0=-3,x1=-0.3,y0=10, y1=-2.8)
+    stim_aperture_right = create_aperture(x0=0.3,x1=3,y0=10, y1=-2.8)
     stim_origin = create_origin(z0=origin_line)
     stim_line = create_central_line()
     
@@ -361,7 +363,7 @@ def run_exp(metronome, hmd, bino, SEL,
                     hmd, bino, headPose, redlight, stim_shutter,
                     adju_ang, 
                     WhiteTexture, BlackoutTexture, FloorTexture, trianglePose0, trianglePose,
-                    stim_origin, stim_aperture_low, stim_aperture_high, 
+                    stim_origin, stim_aperture_low, stim_aperture_high, stim_aperture_left, stim_aperture_right,
                     stim_floor_small, stim_left, stim_right, stim_line,
                     skydark, sky, voro,
                     dim_flag, dim_cnt, first_scene,
@@ -378,11 +380,11 @@ def run_exp(metronome, hmd, bino, SEL,
                         rand_pole = gen_pole_pos(pole_con2_close, pole_con2_far)#, 'close')
                     
                     
-                if rawVal[0] > 0.25:
+                if rawVal[0] > 0.25 and adju_ang < 0.7:
                     adju_ang += min_rotation
                     adjustment_cnt += 1
                     
-                elif rawVal[0] < -0.25:
+                elif rawVal[0] < -0.25 and adju_ang > -0.7:
                     adju_ang -= min_rotation
                     adjustment_cnt -= 1
             else:
@@ -417,7 +419,7 @@ def run_exp(metronome, hmd, bino, SEL,
                 hmd.flip()
                 rawVal = hmd.getThumbstickValues(r'Touch', deadzone=True)[1]
                 if rawVal[1] > 0.25:
-                    if scene_head_pose0[-1] + OFFSET + rand_pole + adju_pole > -4:
+                    if scene_head_pose0[-1] + OFFSET + rand_pole + adju_pole > -10:
                         adju_pole -= min_move
                         adjustment_cnt_pole += 1
                     
@@ -432,12 +434,16 @@ def run_exp(metronome, hmd, bino, SEL,
             if event.getKeys('q') or hmd.shouldQuit or hmd.getButtons('A', 'Touch', 'released')[0]:
                 skip_black = True
                 print('scene cnt %i' % scene_cnt)
+                beep.stop(reset=True)
+                beep.play()
                 if scene_cnt % 2 == 0:
                     #first_scene = False
                     dim_flag = True
                     dim_cnt = 0
-                    beep.stop(reset=True)
-                    beep.play()
+# =============================================================================
+#                     beep.stop(reset=True)
+#                     beep.play()
+# =============================================================================
                 else:
                     zero_scene = True
                     first_scene = True
@@ -456,9 +462,11 @@ def run_exp(metronome, hmd, bino, SEL,
                     
                     last_angle = rand_ang
                     
-                    beep.stop(reset=True)
-                    beep.play()
-                    
+# =============================================================================
+#                     beep.stop(reset=True)
+#                     beep.play()
+# =============================================================================
+                   
                     if RECORD_LOG:
                         all_logs.append([i_exp, local_log])
                 
@@ -522,7 +530,7 @@ if __name__ == "__main__":
     #OUTPUT_PATH = r'.\output'
     #bino = False
     #n_repeat = 3
-    TOTAL_EXP = 63
+    TOTAL_EXP = 45
     
     myDlg = gui.Dlg(title="Fold Parallax")
     myDlg.addText('Participant info')
@@ -543,7 +551,7 @@ if __name__ == "__main__":
     myDlg.addText('Data')
     myDlg.addField('Output directory:', './output')
     # 7
-    myDlg.addField('# of log:', 63)
+    myDlg.addField('# of log:', 45)
     
     ok_data = myDlg.show()  # show dialog and wait for OK or Cancel
     
@@ -577,9 +585,9 @@ if __name__ == "__main__":
         else:
             play_sound = False
         if ok_data[4] in["constant"]:
-            voros = ["voronoi_50","voronoi_50","voronoi_50"]
+            voros = ["voronoi_10","voronoi_10","voronoi_10"]
         else:
-            voros = ["voronoi_50.2","voronoi_50.1","voronoi_50"]
+            voros = ["voronoi_10","voronoi_10","voronoi_10"]
         if ok_data[5] in["constant"]:
             widths = ["wide","wide","wide"]
         else:

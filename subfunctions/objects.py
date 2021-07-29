@@ -98,20 +98,20 @@ def create_half_fold(width, shape='left'):
     
     if shape in ['left']:
         x_range = np.linspace(-1.0*width, 0.0, 2)
-        y_range = np.linspace(2, -2, 2)
+        y_range = np.linspace(2*width, -2*width, 2)
         x, y = np.meshgrid(x_range, y_range)
         z = np.tile(np.array([-1.0*width, 0]), (2, 1))
     else:
         x_range = np.linspace(0.0, 1.0*width, 2)
-        y_range = np.linspace(2, -2, 2)
+        y_range = np.linspace(2*width, -2*width, 2)
         x, y = np.meshgrid(x_range, y_range)
         z = np.tile(np.array([0, -1.0*width]), (2, 1))
         
     vao = mtx2vao(x, y, z)
     return vao
 
-def create_aperture(y0=-0.35,y1=-2.8):
-    x_range = np.linspace(-3.0, 3.0, 2)
+def create_aperture(x0=-3.0, x1=3.0, y0=-0.3,y1=-2.8):
+    x_range = np.linspace(x0, x1, 2)
     y_range = np.linspace(y0, y1, 2)
     x, y = np.meshgrid(x_range, y_range)
     z = np.tile(np.array([-0.8, -0.8]), (2, 1))

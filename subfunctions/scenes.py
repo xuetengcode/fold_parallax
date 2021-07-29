@@ -132,7 +132,7 @@ def fold_scene(
         adju_ang, 
         WhiteTexture, BlackoutTexture, FloorTexture, 
         trianglePose0, trianglePose,
-        stim_origin, stim_aperture_low, stim_aperture_high, stim_floor, stim_left, stim_right, stim_line,
+        stim_origin, stim_aperture_low, stim_aperture_high, stim_aperture_left, stim_aperture_right, stim_floor, stim_left, stim_right, stim_line,
         skydark, sky, voro, 
         dim_flag, dim_cnt, first_scene, 
         dark_cnt, dark_flag,
@@ -192,6 +192,8 @@ def fold_scene(
                 #--------------- aperture
                 hmd = render_plane(stim_aperture_low, hmd, BlackoutTexture, trianglePose0)
                 hmd = render_plane(stim_aperture_high, hmd, BlackoutTexture, trianglePose0)
+                #hmd = render_plane(stim_aperture_left, hmd, BlackoutTexture, trianglePose0)
+                #hmd = render_plane(stim_aperture_right, hmd, BlackoutTexture, trianglePose0)
                 #--------------- floor
                 hmd = render_plane(stim_floor, hmd, FloorTexture, trianglePose0)
                 #-------------- the left half prism
@@ -240,7 +242,7 @@ def fold_scene_grating(
         adju_ang, 
         WhiteTexture, BlackoutTexture, FloorTexture, 
         trianglePose0, trianglePose,
-        stim_origin, stim_aperture_low, stim_aperture_high, stim_floor, stim_left, stim_right, stim_line,
+        stim_origin, stim_aperture_low, stim_aperture_high, stim_aperture_left, stim_aperture_right, stim_floor, stim_left, stim_right, stim_line,
         skydark, sky, voro, 
         dim_flag, dim_cnt, first_scene,
         dark_cnt, dark_flag
@@ -299,6 +301,8 @@ def fold_scene_grating(
                 #--------------- aperture
                 hmd = render_plane(stim_aperture_low, hmd, BlackoutTexture, trianglePose0)
                 hmd = render_plane(stim_aperture_high, hmd, BlackoutTexture, trianglePose0)
+                #hmd = render_plane(stim_aperture_left, hmd, BlackoutTexture, trianglePose0)
+                #hmd = render_plane(stim_aperture_right, hmd, BlackoutTexture, trianglePose0)
                 #--------------- floor
                 hmd = render_plane(stim_floor, hmd, FloorTexture, trianglePose0)
                 #-------------- the left half prism
