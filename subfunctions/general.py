@@ -65,6 +65,16 @@ def write2file(csvhdl,data):
     csvhdl.close()
     
     return
+
+def write2file25(csvhdl,data):
+    
+    for ir in range(len(data)):
+        curr_data = data[ir]
+        csvhdl.write('{}, {}, {}, {}, {}, {}\n'.format(*curr_data))
+    
+    csvhdl.close()
+    
+    return
 def log2file(time_str, data,OUTPUT_PATH, OUTPUT_FILE, ok_data):
     
     print('Saving log to file')
