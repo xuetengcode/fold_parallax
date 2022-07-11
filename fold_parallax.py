@@ -106,9 +106,12 @@ def run_exp(metronome, hmd, bino, SEL,
         
     if ok_data[3] in ["motion"]:
         all_gain = [1/2, 2/3, 4/5, 1, 5/4, 3/2, 2]
+# =============================================================================
+#         all_gain = [1/2, 2]
+# =============================================================================
     else:
         all_gain = [1]
-    all_distance = [-1.5, -3, -6]
+    all_distance = [-1.5]
     
     if ok_data[5] in ["constant"]: # !!!!!!!!!!! always take idx 0
         all_width = [1., 1., 1.]
@@ -458,11 +461,16 @@ if __name__ == "__main__":
         OUTPUT_FILE = r'{}'.format(ok_data[0])
         OUTPUT_PATH = r'{}'.format(ok_data[6])
         repeat = ok_data[1]
+        if ok_data[2] in ["bino"]:
+            bino = True
+        else:
+            bino = False
         
-        bino = True
-        ok_data[2] = "bino"
-        play_sound = True
-        ok_data[3] = "motion"
+        if ok_data[3] in ["motion"]:
+            play_sound = True
+            
+        else:
+            play_sound = False
         
         if ok_data[4] in["constant"]:
             voros = ["voronoi_10","voronoi_10","voronoi_10"]
