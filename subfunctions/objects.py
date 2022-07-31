@@ -180,18 +180,18 @@ def distance_restriction(head_pos, fr=-0.09-0.05, bk=-0.09+0.05): # fr=-0.12, bk
         dimming = False
     return dimming
 
-def red_activate(hmd, head_pos, eye, redlight, hit_left, hit_right, red_cnt_l=0, red_cnt_r=0):
-    light_shift = 0.9
+def red_activate(hmd, head_pos, eye, redlight, hit_left, hit_right, red_cnt_l=0, red_cnt_r=0, light_shift=0.9):
+    #light_shift = 0.9
     parallax_thr = 0.1
     if head_pos.pos[0] > parallax_thr and eye == 'right':
-        redlight.pos = (light_shift, 0.)
+        redlight.pos = (light_shift - 0.01, 0.)
         redlight.draw(hmd)
         if hit_left:
             red_cnt_r += 1
             hit_right = True
             hit_left = False
     elif head_pos.pos[0] < -parallax_thr and eye == 'left':
-        redlight.pos = (-light_shift, 0.)
+        redlight.pos = (-light_shift - 0.01, 0.)
         redlight.draw(hmd)
         if hit_right:
             red_cnt_l += 1
@@ -199,14 +199,14 @@ def red_activate(hmd, head_pos, eye, redlight, hit_left, hit_right, red_cnt_l=0,
             hit_right = False
     return hmd, hit_left, hit_right, red_cnt_l, red_cnt_r
 
-def red(hmd, head_pos, eye, redlight):
-    light_shift = 0.9
+def red(hmd, head_pos, eye, redlight, light_shift=0.9):
+    #light_shift = 0#0.9
     parallax_thr = 0.1
     if head_pos.pos[0] > parallax_thr and eye == 'right':
-        redlight.pos = (light_shift, 0.)
+        redlight.pos = (light_shift - 0.01, 0.)
         redlight.draw(hmd)
     elif head_pos.pos[0] < -parallax_thr and eye == 'left':
-        redlight.pos = (-light_shift, 0.)
+        redlight.pos = (-light_shift - 0.01, 0.)
         redlight.draw(hmd)
             
     return hmd

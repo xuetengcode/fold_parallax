@@ -5,23 +5,23 @@
 
 0 - If everything is already installed, follow the items in "Instructions.pdf" every time you run the experiment.
 
-1 - Go to this website to download Anaconda installer for python 3.7 then install it: https://www.anaconda.com/products/individual#windows
+1 - Go to this website to download latest Anaconda installer for python then install it: https://www.anaconda.com/products/individual#windows
 
-2 - Create a python 3.6 enviroment. After installation, Windows Search "Anaconda Prompt", then type in the prompt:
+2 - Create a python 3.8 enviroment. After installation, Windows Search "Anaconda Prompt", then type in the prompt:
 
-```conda create -n psychxr python=3.6```
+```conda create -n psychxr python=3.8```
 
 3 - Before you run the experiment, the above enviroment needs to be activated by typing:
 
 ```conda activate psychxr ```
 
-4 - Install dependency pywinhook:
+4 - Install Psychopy:
 
-```conda install -c conda-forge pywinhook ```
+```conda install -c conda-forge psychopy```
 
-5 - Install Psychxr and Psychopy:
+5 - Install Psychxr and other supporting packages:
 
-```pip install psychxr==0.2.2 psychopy==2020.2 ```
+```pip install psychxr==0.2.4rc3.post glfw==2.5.4 psychtoolbox soundfile```
 
 6 - Install Spyder:
 
@@ -38,19 +38,11 @@
 
 	- Put your name or initial in Participant Info;
 
-	- Vary the "Stereo Condition" and "Motion Condition" (both binary choices), you will have 4 experiments in total;
+	- Vary the "Stereo Condition", you will have 4 experiments in total;
 	
 	- Position yourself at the desired location where you want to do the experiment, then press the "OK" button on the dialogue panel.
 
-10 - To visualize the scene:
-	
-	- For Motion Condition "motion": participants are reuqired to do parallax motion from left to right at about
-					30 cm (aligned with the metronome audio). The scene is activated by a full left-right
-					movement(indicated by red boundary lights).
-	
-	- For Motion Condition "static": scene is activated by button "A" on right hand controller or "n" on the keyboard.
-					Participants are required to stand still at the ground bar and make sure neither 
-					boundary light is on.
+10 - To visualize the scene, participants are reuqired to do parallax motion from left to right at about 20 cm (aligned with the metronome audio). The scene is activated by a full left-right movement(indicated by red boundary lights).
 
 11 - When a scene is presented, a ground plane will appear, together with a white bar on it.
 	Participants are required to stand on top of the bar while facing the voronoi fold stimuli.
@@ -68,7 +60,8 @@
 	
 13 - If the scene is dimmed, it means the participant is out of the sagittal range (front-back restriction). Move along the sagittal axis to disable the dimming.
 
-14 - Participants are required to maintain the motion condition while adjusting the angle of the fold using the thumb stick until the fold is orthogonal. When the adjustment is final, press button "A" to proceed.
+14 - Participants are required to maintain motion parallax while judging if the visual scene presents more or less motion than one would expect in the real world.
+	 If perceived more, press top button "B", otherwise bottom button "A"
  
 15 - Keyboard control:
 
@@ -86,9 +79,6 @@
  
 	- Button "X" (left hand): to calibrate based on your current position and orientation;
 	
-	- Button "A" (right hand): to proceed - visualize the scene when blackout (static), 
-						or enter data and go blackout when the scene is presented;
+	- Button "A", "B" (right hand): to input data and proceed.
 
-	- Button "B" (right hand): to terminate the entire experiment when the scene is presented.
-
-17 - After you are done with all 4 experiments, zip the "output" folder and email me your data.
+17 - After you are done with both blocks, zip the "output" folder and email me your data.

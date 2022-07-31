@@ -106,9 +106,13 @@ def run_exp(metronome, hmd, bino, SEL,
         
     if ok_data[3] in ["motion"]:
         all_gain = [1/2, 2/3, 4/5, 1, 5/4, 3/2, 2]
+<<<<<<< HEAD
+        all_gain = [1/2, 2]
+=======
 # =============================================================================
 #         all_gain = [1/2, 2]
 # =============================================================================
+>>>>>>> 2a58925daa4a012e3429cd9a97c8ac475cc980bf
     else:
         all_gain = [1]
     all_distance = [-1.5]
@@ -148,7 +152,7 @@ def run_exp(metronome, hmd, bino, SEL,
     # https://www.psychopy.org/api/visual/lightsource.html#psychopy.visual.LightSource
     #dirLight = LightSource(hmd, pos=(0., 1., 0.), ambientColor=(0.0, 1.0, 0.0), lightType='point')
     #hmd.lights = dirLight    
-    redlight = visual.GratingStim(hmd, mask='gauss', size=1.0, tex=None, color='red', contrast=0.5, units='norm')
+    redlight = visual.GratingStim(hmd, mask='gauss', size=3.0, tex=None, color='red', contrast=0.5, units='norm')
     redlight.setOpacity(1) # 0.5
     
     shutter_dict = {
@@ -444,9 +448,15 @@ if __name__ == "__main__":
     
     if myDlg.OK:  # or if ok_data is not None
         stopApp = False
+# =============================================================================
+#         hmd = visual.Rift(samples=32, color=(-1, -1, -1), waitBlanking=False, 
+#                           winType='glfw', #unit='norm',
+#                           useLights=True)
+# =============================================================================
+        
         hmd = visual.Rift(samples=32, color=(-1, -1, -1), waitBlanking=False, 
-                          winType='glfw', #unit='norm',
-                          useLights=True)
+                                  winType='glfw', #unit='norm',useLights=True
+                                  )
         # currenttime0 = hmd.getPredictedDisplayTime()
         # state0 = hmd.getTrackingState(currenttime0)
         # headPose0 = state0.headPose.thePose
