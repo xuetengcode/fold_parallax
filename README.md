@@ -82,3 +82,18 @@
 	- Button "A", "B" (right hand): to input data and proceed.
 
 17 - After you are done with both blocks, zip the "output" folder and email me your data.
+
+
+
+## Vibration
+http://psychxr.org/api/libovr.html
+
+CONTROLLER_TYPE_XBOX : XBox gamepad.
+CONTROLLER_TYPE_REMOTE : Oculus Remote.
+CONTROLLER_TYPE_TOUCH : Combined Touch controllers.
+CONTROLLER_TYPE_LTOUCH : Left Touch controller.
+CONTROLLER_TYPE_RTOUCH : Right Touch controller.
+CONTROLLER_TYPE_OBJECT0 : Object 0 controller.
+CONTROLLER_TYPE_OBJECT1 : Object 1 controller.
+CONTROLLER_TYPE_OBJECT2 : Object 2 controller.
+CONTROLLER_TYPE_OBJECT3 : Object 3 controller.
