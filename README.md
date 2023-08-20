@@ -87,13 +87,26 @@
 
 ## Vibration
 http://psychxr.org/api/libovr.html
-
-CONTROLLER_TYPE_XBOX : XBox gamepad.
-CONTROLLER_TYPE_REMOTE : Oculus Remote.
-CONTROLLER_TYPE_TOUCH : Combined Touch controllers.
-CONTROLLER_TYPE_LTOUCH : Left Touch controller.
-CONTROLLER_TYPE_RTOUCH : Right Touch controller.
-CONTROLLER_TYPE_OBJECT0 : Object 0 controller.
-CONTROLLER_TYPE_OBJECT1 : Object 1 controller.
-CONTROLLER_TYPE_OBJECT2 : Object 2 controller.
-CONTROLLER_TYPE_OBJECT3 : Object 3 controller.
+https://www.psychopy.org/_modules/psychopy/visual/rift.html
+```
+RIFT_CONTROLLER_TYPES = {
+	'Xbox': libovr.CONTROLLER_TYPE_XBOX,
+	'Remote': libovr.CONTROLLER_TYPE_REMOTE,
+	'Touch': libovr.CONTROLLER_TYPE_TOUCH,
+	'LeftTouch': libovr.CONTROLLER_TYPE_LTOUCH,
+	'RightTouch': libovr.CONTROLLER_TYPE_RTOUCH,
+	'Object0': libovr.CONTROLLER_TYPE_OBJECT0,
+	'Object1': libovr.CONTROLLER_TYPE_OBJECT1,
+	'Object2': libovr.CONTROLLER_TYPE_OBJECT2,
+	'Object3': libovr.CONTROLLER_TYPE_OBJECT3,
+	libovr.CONTROLLER_TYPE_XBOX: 'Xbox',
+	libovr.CONTROLLER_TYPE_REMOTE: 'Remote',
+	libovr.CONTROLLER_TYPE_TOUCH: 'Touch',
+	libovr.CONTROLLER_TYPE_LTOUCH: 'LeftTouch',
+	libovr.CONTROLLER_TYPE_RTOUCH: 'RightTouch',
+	libovr.CONTROLLER_TYPE_OBJECT0: 'Object0',
+	libovr.CONTROLLER_TYPE_OBJECT1: 'Object1',
+	libovr.CONTROLLER_TYPE_OBJECT2: 'Object2',
+	libovr.CONTROLLER_TYPE_OBJECT3: 'Object3'
+}
+```

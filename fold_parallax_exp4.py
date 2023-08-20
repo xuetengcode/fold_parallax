@@ -339,7 +339,7 @@ def run_exp(metronome, hmd, bino, SEL,
                 scene_cnt += 1
 
                 # add haptics
-                hmd.startHaptics('CONTROLLER_TYPE_RTOUCH')
+                hmd.startHaptics('RightTouch')
             
             elif event.getKeys('a') or hmd.shouldQuit or hmd.getButtons('B', 'Touch', 'released')[0]:
                 if play_sound:
