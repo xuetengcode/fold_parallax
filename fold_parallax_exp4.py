@@ -279,7 +279,13 @@ def run_exp(metronome, hmd, bino, SEL,
         
         if not skip_black or play_sound:
             lasttime = blackscene(beep, hmd, redlight, metronome, play_sound, timediff, lasttime)
-            
+        
+        red_cnt_l = 0
+        red_cnt_r = 0
+        hit_left = True
+        hit_right = False
+        activate_cnt = 1
+
         while not stopCurr:            
             i_exp,results,stopCurr = check_rerun(i_exp,results,exp_conditions,stopCurr) # ===============> check rerun
             cnt += 1
@@ -300,7 +306,7 @@ def run_exp(metronome, hmd, bino, SEL,
             
             # first scene
             
-            hmd, first_scene, dim_cnt, dim_flag, dark_cnt, dark_flag = fold_scene(
+            hmd, first_scene, dim_cnt, dim_flag, dark_cnt, dark_flag, hit_left, hit_right, red_cnt_l, red_cnt_r = fold_scene(
                 hmd, bino, headPose, redlight, stim_shutter,
                 adju_ang, 
                 WhiteTexture, BlackoutTexture, FloorTexture, trianglePose0, trianglePose,
@@ -309,10 +315,12 @@ def run_exp(metronome, hmd, bino, SEL,
                 skydark, sky, voro,
                 dim_flag, dim_cnt, first_scene,
                 dark_cnt, dark_flag,
+                hit_left, hit_right, red_cnt_l, red_cnt_r,
                 shutter_dict
                 )
             
-                
+            if red_cnt_l < activate_cnt and red_cnt_r < activate_cnt:
+                continue
             # =============== event handling ==================
             if event.getKeys('q') or hmd.shouldQuit or hmd.getButtons('A', 'Touch', 'released')[0]:
                 if play_sound:

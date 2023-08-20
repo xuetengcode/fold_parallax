@@ -10,7 +10,8 @@ import pyglet.gl as GL
 from subfunctions.objects import (
     render_plane, render2hmd, gen_offset_mtx,
     red, black,
-    distance_restriction, dim_scene
+    distance_restriction, dim_scene,
+    red_activate
     )
 
 # In[]
@@ -136,7 +137,8 @@ def fold_scene(
         skydark, sky, voro, 
         dim_flag, dim_cnt, first_scene, 
         dark_cnt, dark_flag,
-        plane_dict={}
+        hit_left, hit_right, red_cnt_l, red_cnt_r,
+        plane_dict={},
         ):
     
     dimming = False
@@ -148,21 +150,18 @@ def fold_scene(
                 dim_cnt += 1
             #----------------------------------
             hmd.setDefaultView()
-            hmd = red(hmd, headPose, i, redlight)
-            
+            #hmd = red(hmd, headPose, i, redlight)
+            hmd, hit_left, hit_right, red_cnt_l, red_cnt_r = red_activate(hmd, headPose, i, redlight, 
+                                                                            hit_left, hit_right, red_cnt_l, red_cnt_r)
             GL.glColor3f(1.0, 1.0, 1.0)  # <<< reset the color manually
         else:
-                
             hmd.setBuffer(i)
             if dim_flag:
-                
                 dim_ed = 0.7
                 total_time = 32*15
                 stim_shutter.opacity = dim_cnt/(total_time)
                 #blacklight.setOpacity( 1.0 )
-                
                 #hmd, stim_shutter = dim_scene(hmd, headPose, i, stim_shutter)
-                
                 if dim_cnt > total_time*dim_ed:
                     # change back
                     stim_shutter.opacity = 0.5
@@ -227,14 +226,15 @@ def fold_scene(
                     stim_shutter.thePose.setOriAxisAngle(plane_dict['front'][1], plane_dict['front'][2])
             #----------------------------------
             hmd.setDefaultView()
-            hmd = red(hmd, headPose, i, redlight)
-            
+            #hmd = red(hmd, headPose, i, redlight)
+            hmd, hit_left, hit_right, red_cnt_l, red_cnt_r = red_activate(hmd, headPose, i, redlight, 
+                                                                            hit_left, hit_right, red_cnt_l, red_cnt_r)
             GL.glColor3f(1.0, 1.0, 1.0)  # <<< reset the color manually
             
     hmd.flip()
     
     
-    return hmd, first_scene, dim_cnt, dim_flag, dark_cnt, dark_flag
+    return hmd, first_scene, dim_cnt, dim_flag, dark_cnt, dark_flag, hit_left, hit_right, red_cnt_l, red_cnt_r
 
 # ===============================
 def fold_scene_grating(
