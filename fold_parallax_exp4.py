@@ -229,6 +229,9 @@ def run_exp(metronome, hmd, bino, SEL,
     i_exp = 0
     updated = False
     skip_black = False
+
+    haptics_time = 3
+
     while i_exp < len(exp_conditions):
     #for i_exp in range(len(exp_conditions)):
         local_log = []
@@ -280,11 +283,18 @@ def run_exp(metronome, hmd, bino, SEL,
         if not skip_black or play_sound:
             lasttime = blackscene(beep, hmd, redlight, metronome, play_sound, timediff, lasttime)
         
+        lasttime = hmd.getPredictedDisplayTime()
+
         red_cnt_l = 0
         red_cnt_r = 0
         hit_left = True
         hit_right = False
         activate_cnt = 1
+
+        last_l = 0
+        last_r = 0
+        target_side = -1
+        flag_haptics = False
 
         while not stopCurr:            
             i_exp,results,stopCurr = check_rerun(i_exp,results,exp_conditions,stopCurr) # ===============> check rerun
@@ -319,6 +329,36 @@ def run_exp(metronome, hmd, bino, SEL,
                 shutter_dict
                 )
             
+            
+            if red_cnt_l == last_l and red_cnt_r == last_r:
+                #print('[checking] {}'.format(currenttime - lasttime))
+                if currenttime - lasttime > haptics_time:
+                    flag_haptics = True
+            
+            if red_cnt_l > last_l:
+                target_side = 0
+                lasttime = currenttime
+            elif red_cnt_r > last_r:
+                target_side = 1
+                lasttime = currenttime
+
+            if target_side == 0 and red_cnt_r == last_r:
+                if currenttime - lasttime > haptics_time:
+                    flag_haptics = True
+            if target_side == 1 and red_cnt_l == last_l:
+                if currenttime - lasttime > haptics_time:
+                    flag_haptics = True
+
+            if flag_haptics:
+                print('haptics')
+                # add haptics
+                hmd.startHaptics('RightTouch')
+                flag_haptics = False
+                lasttime = currenttime
+
+            last_l = red_cnt_l
+            last_r = red_cnt_r
+
             if red_cnt_l < activate_cnt and red_cnt_r < activate_cnt:
                 continue
             # =============== event handling ==================
@@ -346,9 +386,6 @@ def run_exp(metronome, hmd, bino, SEL,
                 i_exp += 1
                 scene_cnt += 1
 
-                # add haptics
-                hmd.startHaptics('RightTouch')
-            
             elif event.getKeys('a') or hmd.shouldQuit or hmd.getButtons('B', 'Touch', 'released')[0]:
                 if play_sound:
                     stopCurr = True
