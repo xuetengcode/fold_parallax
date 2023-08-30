@@ -1,2 +1,12 @@
 *.csv
 *.pyc
+*.R
+*.r
+.Rhistory
+output/
+*.xlsx
+
+analyze_ranova_angle_R_width.py
+data_processing.py
+
+moonrider/

@@ -359,6 +359,19 @@ def run_exp(metronome, hmd, bino, SEL,
             last_l = red_cnt_l
             last_r = red_cnt_r
 
+            if event.getKeys('x') or hmd.shouldQuit or hmd.getButtons('Y', 'Touch', 'released')[0]:
+                print(' ==> program stoped or finished')
+                results.append([
+                    abs(exp_conditions[i_exp][0]), exp_conditions[i_exp][1], exp_conditions[i_exp][2],
+                    rand_ang, 0, 0
+                    ])
+                
+                stopApp = True
+                stopCurr = True
+                
+                if RECORD_LOG:
+                    all_logs.append([i_exp, local_log])
+
             if red_cnt_l < activate_cnt and red_cnt_r < activate_cnt:
                 continue
             # =============== event handling ==================
@@ -410,19 +423,6 @@ def run_exp(metronome, hmd, bino, SEL,
                 i_exp += 1
                 scene_cnt += 1
                 
-            elif event.getKeys('x') or hmd.shouldQuit or hmd.getButtons('Y', 'Touch', 'released')[0]:
-                print(' ==> program stoped or finished')
-                results.append([
-                    abs(exp_conditions[i_exp][0]), exp_conditions[i_exp][1], exp_conditions[i_exp][2],
-                    rand_ang, 0, 0
-                    ])
-                
-                stopApp = True
-                stopCurr = True
-                
-                if RECORD_LOG:
-                    all_logs.append([i_exp, local_log])
-                    
             elif event.getKeys('c') or hmd.shouldRecenter or hmd.getButtons('X', 'Touch', 'released')[0]:
                 #if not updated:
                         
@@ -471,7 +471,7 @@ if __name__ == "__main__":
     # 0
     myDlg.addField('Name:', 'default')
     # 1
-    myDlg.addField('# of Rounds:', 1)
+    myDlg.addField('# of Rounds:', 20)
     # 2
     myDlg.addText('Conditions')
     myDlg.addField('Stereo Condition:', choices=["bino", "mono"])
