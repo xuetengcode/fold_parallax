@@ -166,7 +166,9 @@ def dim_scene(hmd, head_pos, eye, stim_shutter): # fr=-0.12, bk=0.05
 
     return hmd, stim_shutter
 
-def distance_restriction(head_pos, fr=-0.09-0.05, bk=-0.09+0.05): # fr=-0.12, bk=0.05
+def distance_restriction(head_pos, fr=-0.15, bk=0.15): # fr=-0.12, bk=0.05
+    #  fr=-0.09-0.05, bk=-0.09+0.05
+
     # OFF_SET = -1, fr=-1.25, bk=-1.15
     # OFF_SET = 0, -0.09
 # =============================================================================
@@ -174,7 +176,7 @@ def distance_restriction(head_pos, fr=-0.09-0.05, bk=-0.09+0.05): # fr=-0.12, bk
 #     print(bk)
 # =============================================================================
     #print(head_pos.pos[2] < fr)
-    if head_pos.pos[2] > bk or head_pos.pos[2] < fr:
+    if head_pos.pos[0] > bk or head_pos.pos[0] < fr:
         dimming = True
     else:
         dimming = False
@@ -183,17 +185,27 @@ def distance_restriction(head_pos, fr=-0.09-0.05, bk=-0.09+0.05): # fr=-0.12, bk
 def red_activate(hmd, head_pos, eye, redlight, hit_left, hit_right, red_cnt_l=0, red_cnt_r=0, light_shift=0.9):
     #light_shift = 0.9
     parallax_thr = 0.1
-    if head_pos.pos[0] > parallax_thr and eye == 'right':
-        redlight.pos = (light_shift - 0.01, 0.)
+    if head_pos.pos[2] > parallax_thr:
+        #redlight.pos = (light_shift - 0.01, 0.)
+        if eye == 'left':
+            redlight.pos = (light_shift, 0.3)
+        else:
+            redlight.pos = (-light_shift, 0.3)
+        
         redlight.draw(hmd)
-        if hit_left:
+        
+        if hit_left and eye == 'right':
             red_cnt_r += 1
             hit_right = True
             hit_left = False
-    elif head_pos.pos[0] < -parallax_thr and eye == 'left':
-        redlight.pos = (-light_shift - 0.01, 0.)
+    elif head_pos.pos[2] < -parallax_thr:
+        #redlight.pos = (-light_shift - 0.01, 0.)
+        if eye == 'left':
+            redlight.pos = (light_shift, 0.2)
+        else:
+            redlight.pos = (-light_shift, 0.2)
         redlight.draw(hmd)
-        if hit_right:
+        if hit_right and eye == 'left':
             red_cnt_l += 1
             hit_left = True
             hit_right = False

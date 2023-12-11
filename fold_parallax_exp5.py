@@ -6,6 +6,9 @@ Change notes:
     - Jul 2022, gain perception experiments
     - Jul 2022, from v25_v4
     - Aug 2023, fold_parallax_exp4.py
+    - Nov 2023, fold_parallax_exp5.py
+        front/back activate redlight
+    
 """
 import time
 from psychopy import gui
@@ -107,7 +110,7 @@ def run_exp(metronome, hmd, bino, SEL,
         
     if ok_data[3] in ["motion"]:
         all_gain = [1/2, 2/3, 4/5, 1, 5/4, 3/2, 2]
-        #all_gain = [1/2, 2]
+        all_gain = [1/2, 2]
     else:
         all_gain = [1]
     all_distance = [-1.5]
@@ -305,7 +308,8 @@ def run_exp(metronome, hmd, bino, SEL,
             headPose = state.headPose.thePose
             scene_head_pose = libovr.LibOVRPose(*headPose.posOri)
             if first_scene: # only has gain in the first scene
-                scene_head_pose.pos[0] *= exp_conditions[i_exp][1]#-------gain
+                #scene_head_pose.pos[0] *= exp_conditions[i_exp][1]#-------gain
+                scene_head_pose.pos[2] *= exp_conditions[i_exp][1]#-------gain
                 
             hmd.calcEyePoses(scene_head_pose)
             
