@@ -151,14 +151,18 @@ def run_exp(metronome, hmd, bino, SEL,
     origin_line = 0
     #--------------------------
     # Hand related
+    # L130
     #pointerMat = visual.BlinnPhongMaterial(hmd, diffuseColor=(0, 1, 0))
     #pointerSphere = visual.SphereStim(hmd, radius=0.03, useMaterial=pointerMat, useShaders=False)
 
     #pointerMat = visual.BlinnPhongMaterial(hmd)
     #pointerMat.setDiffuseColor([0,1,0])
-    pointerSphere = visual.SphereStim(hmd, pos=(0., 0., -1.5), radius=0.9, color=(1,1,1)) # (1, 0, 0)
+    pointerSphere = visual.SphereStim(hmd, pos=(0, 5, -0.45), radius=0.05, color=(1,0,0)) # (1, 0, 0)
     #pointerSphere = visual.SphereStim(hmd, pos=(0., 0., -1.5), radius=0.9, useMaterial=pointerMat)
-
+    #pointerSphere = visual.BoxStim(hmd, color=(0, 1, 0), pos=(0,0,0), colorSpace='rgb')
+    pointerSphere.colorSpace = 'rgb255'
+    pointerSphere.color = (128, 255, 128)
+    print(pointerSphere.pos)
     #-------------------
     #hmd.ambientLight = [0.5, 0.5, 0.5]
     # https://www.psychopy.org/api/visual/lightsource.html#psychopy.visual.LightSource

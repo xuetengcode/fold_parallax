@@ -139,8 +139,12 @@ def fold_scene(
         dark_cnt, dark_flag,
         hit_left, hit_right, red_cnt_l, red_cnt_r,
         plane_dict={},
+        hand_pose=[], pointerSphere=[]
         ):
-    
+    """
+    plane_dict: shutter
+    hand_pose, pointerSphere: (2023-12-16) attach a sphere to hand
+    """
     dimming = False
     for i in ('left', 'right'):
         if i == 'left' and not bino:
@@ -186,6 +190,7 @@ def fold_scene(
             
             if not dark_flag:
                 hmd.setRiftView()
+                
                 #--------------- origin
                 hmd = render_plane(stim_origin, hmd, WhiteTexture, trianglePose0)
                 #--------------- aperture
@@ -204,6 +209,12 @@ def fold_scene(
                 #--------- central line
                 hmd = render_plane(stim_line, hmd, BlackoutTexture, trianglePose)
                 sky.draw()
+                
+                #--------------- hand
+                #print(hand_pose.pos)
+                pointerSphere.setPos(hand_pose.pos)
+                pointerSphere.draw()
+                
                 if dimming or dim_flag:
                     
                     stim_shutter.draw()

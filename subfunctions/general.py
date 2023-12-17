@@ -75,12 +75,14 @@ def write2file25(csvhdl,data):
     csvhdl.close()
     
     return
-def log2file(time_str, data,OUTPUT_PATH, OUTPUT_FILE, ok_data):
+def log2file(time_str, log, OUTPUT_PATH, OUTPUT_FILE, ok_data):
     
     print('Saving log to file')
-    for i_exp in range(len(data)):
-        csvhdl = init_log(time_str, OUTPUT_PATH, OUTPUT_FILE, i_exp, ok_data)
-        i_exp,log_data=data[i_exp]
+    for i_log in range(len(log)):
+        
+        i_trial, log_data=log[i_log]
+        csvhdl = init_log(time_str, OUTPUT_PATH, OUTPUT_FILE, i_trial, ok_data)
+
         for ir in range(len(log_data)):
             curr_data = log_data[ir]
             csvhdl.write('{}, {}, {}\n'.format(*curr_data))
